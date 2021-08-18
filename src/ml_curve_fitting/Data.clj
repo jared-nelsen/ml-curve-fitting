@@ -1,33 +1,32 @@
-(ns binary-association-simulator.Data)
-;; This file constitutes the area of functionality around generating simulation data.
-;;
-;; Transformation Vector Data Format
-;; ---------------------------------
-;; Example Input Frame:   [0  1  2   3   4  5]
-;; Example Output Frame:  [20 34 138 554 78 990]
-;;
-;; Binary Associator Data Format
-;; -----------------------------
-;; Example Data Frame :   [[TV Data] [TV Data] [TV Data]]
+(ns ml_curve_fitting.Data)
 
-(defn generateTransformationVectorInputFrame
-  "An input frame is a vector of length N composed of increasing integers
-   starting at index 0."
-  [N]
-  (loop [n 0
-         frame []]
-    (if (= n N)
-      frame
-      (recur (inc n) (conj frame n)))))
+(defn randomDoubleInARange
+  [low high]
+  (+ low (* (rand) ( - high low))))
 
-(defn generateTransformationVectorOutputFrame
-  "An output frame is a vector of length N composed of arbitrary random
-   integers."
-  [N]
-  (vec (take N (repeatedly #(rand-int Integer/MAX_VALUE)))))
+(def pointMinY -10.0)
+(def pointMaxY 10.0)
+(def defaultPointsToFit 5)
 
-(defn generateTransformationVectorSimulationData
-  [inputOutputPairCount]
-  {:inputOutputPairCount inputOutputPairCount
-   :inputFrame (generateTransformationVectorInputFrame inputOutputPairCount)
-   :outputFrame (generateTransformationVectorOutputFrame inputOutputPairCount)})
+(defrecord Point [x y])
+
+(defn generateRandomPoint
+  [x]
+  (Point. x (randomDoubleInARange pointMinY pointMaxY)))
+
+(defn generateVectorOfRandomPoints
+  [length]
+  (loop [vectorOfPoints []
+         remainingPoints length
+         xIndex 1]
+    (if (= 0 remainingPoints)
+      vectorOfPoints
+      (recur (conj vectorOfPoints (generateRandomPoint xIndex))
+             (dec remainingPoints)
+             (inc xIndex)))))
+
+(defrecord PointsToFit [points])
+
+(defn generatePointsToFit
+  []
+  (PointsToFit. (generateVectorOfRandomPoints defaultPointsToFit)))
