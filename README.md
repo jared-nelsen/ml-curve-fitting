@@ -15,7 +15,6 @@ Curve fitting with Genetic Algorithms
    - Randomly generate Data to solve
    - Global defs for length of data
    - Max and Min for X and Y magnitudes of points
-
 ## Mutation
 
    1. Go through the control points and make minor random adjustments to their x y position

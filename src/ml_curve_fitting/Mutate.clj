@@ -1,7 +1,13 @@
 
-(ns binary-association-simulator.Mutate
-  (:require [binary-association-simulator.BinaryAssociator :as binary-associator]
-            [binary-association-simulator.GeneticAlgorithm :as GA]))
+(ns ml_curve_fitting.Mutate
+  (:require [ml_curve_fitting.BezierCurve :as bCurve]))
+
+(def valueBumpLow -0.001)
+(def valueBumpHigh 0.001)
+
+(defn randomDoubleInARange
+  [low high]
+  (+ low (* (rand) ( - high low))))
 
 ;;-----------------------------------------------------------------------------------
 ;; Add and Remove
@@ -22,147 +28,108 @@
   [vector index]
   (vec (concat (subvec vector 0 index) (subvec vector (inc index)))))
 
-(defn addTransformationToTransformationVector
-  "Adds a random Transform to a random index in the given
-   Transformation Vector."
-  [transformationVector]
-  (let [transforms (get transformationVector :transformations)
-        newRandomTransform (binary-associator/randomTransform)
-        addIndex (rand (count transforms))
-        updatedTransforms (addItemToVectorAtIndex transforms
-                                                  newRandomTransform
-                                                  addIndex)]
-    (assoc transformationVector :transformations updatedTransforms)))
+(defn resetXIndecesOfControlPointVector
+  "Sets the X indeces in each Control Point in the given Control Point vector to its own position
+   in the given vector."
+  [controlPointVector]
+  (loop [currentIndex 0
+         updatedControlPointVector []
+         controlPointVector controlPointVector]
+    (if (empty? controlPointVector)
+      updatedControlPointVector
+      (let [currentControlPoint (first controlPointVector)
+            updatedControlPoint (assoc currentControlPoint :x currentIndex)]
+        (recur (inc currentIndex)
+               (conj updatedControlPointVector updatedControlPoint)
+               (rest controlPointVector))))))
 
-(defn addTransformationsToTransformationVector
-  "Adds N Transforms to the given Transformation Vector where
-   N is any of 0 to transformationAddRemoveCountMax according
-   to the mutation rate."
-  [context transformationVector mutationRate]
-  (if (<= (rand) mutationRate)
-      (let [addRemoveMax (get context :transformationAddRemoveCountMax)]
-        (loop [count (rand-int (inc addRemoveMax))
-               transformationVector transformationVector]
-          (if (= 0 count)
-            transformationVector
-            (recur (dec count)
-                   (addTransformationToTransformationVector transformationVector)))))
-      transformationVector))
+(defn addRandomControlPointToBezierCurve
+  "Adds a random Control Point to a random index in the given Bezier Curve."
+  ([bezierCurve mutationRate]
+   (if (< (rand) mutationRate)
+     (addRandomControlPointToBezierCurve bezierCurve)
+     bezierCurve))
+  ([bezierCurve]
+   (let [controlPointVector (get bezierCurve :controlPointVector)
+         ;; Give the new Control Point an invalid X index. X indeces will be rectified in the next few steps
+         newRandomControlPoint (bCurve/->ControlPoint -1 (bCurve/randomDoubleInARange bCurve/defaultYMin
+                                                                                      bCurve/defaultYMax))
+         addIndex (rand-int (count controlPointVector))
+         updatedControlPointVector (addItemToVectorAtIndex controlPointVector
+                                                           newRandomControlPoint
+                                                           addIndex)
+         updatedControlPointVector (resetXIndecesOfControlPointVector updatedControlPointVector)]
+     (assoc bezierCurve :controlPointVector updatedControlPointVector))))
 
-(defn removeTransformationFromTransformationVector
-  "Randomly removes a Transform from the given Transformation Vector."
-  [transformationVector]
-  (let [transforms (get transformationVector :transformations)
-        removeIndex (rand-int (count transforms))
-        updatedTransforms (removeItemFromVectorAtIndex transforms
-                                                       removeIndex)]
-    (assoc transformationVector :transformations updatedTransforms)))
-
-(defn removeTransformationsFromTransformationVector
-  "Removes N Transforms from the given Transformation Vector where
-   N is any of 0 to transformationAddRemoveCountMax according to
-   the mutation rate."
-  [context transformationVector mutationRate]
-  (if (<= (rand) mutationRate)
-    (let [addRemoveMax (get context :transformationAddRemoveCountMax)
-          numTransforms (count transformationVector)
-          count (rand-int (inc addRemoveMax))]
-      (if (and (>= numTransforms 3) ;; Dont remove if 3 or less Transforms
-               (> count (dec numTransforms))) ;; Dont remove all of them
-        (loop [count count
-               transformationVector transformationVector]
-          (if (= 0 count)
-            transformationVector
-            (recur (dec count)
-                   (removeTransformationFromTransformationVector transformationVector))))
-        transformationVector))
-    transformationVector))
+(defn randomlyRemoveControlPointFromBezierCurve
+  "Randomly removes a Control Point from the given Bezier Curve."
+  ([bezierCurve mutationRate]
+   (if (< (rand) mutationRate)
+     (randomlyRemoveControlPointFromBezierCurve bezierCurve)
+     bezierCurve))
+  ([bezierCurve]
+   (let [controlPointVector (get bezierCurve :controlPointVector)
+         removeIndex (rand-int (count controlPointVector))
+         updatedControlPointVector (removeItemFromVectorAtIndex controlPointVector
+                                                                removeIndex)
+         updatedControlPointVector (resetXIndecesOfControlPointVector updatedControlPointVector)]
+     (assoc bezierCurve :controlPointVector updatedControlPointVector))))
 
 ;;----------------------------------------------------------------------------------
 ;;-----------------------------------------------------------------------------------
-;; Operators and Data
+;; Control Points
 ;;-----------------------------------------------------------------------------------
 
-(defn mutateData
-  "Mutates the data in the given Transform."
-  [transform mutationRate]
+(defn mutateControlPointValue
+  "Mutates the given value in the bumping range according to the mutation rate."
+  [value mutationRate]
   (if (<= (rand) mutationRate)
-    (let [newData (rand-int Integer/MAX_VALUE)]
-      (assoc transform :data newData))
-    transform))
+    (+ value (randomDoubleInARange valueBumpLow valueBumpHigh))
+    value))
 
-(defn mutateOperation
-  "Mutates the operation in the given Transform according to the mutation rate."
-  [transform mutationRate]
-  (if (<= (rand) mutationRate)
-    (let [newOperation (rand-int 10)]
-      (assoc transform :operation newOperation))
-    transform))
+(defn mutateControlPoint
+  "Mutates the X and Y values of the given Control Point."
+  ([controlPoint mutationRate]
+   (if (< (rand) mutationRate)
+     (mutateControlPoint controlPoint)
+     controlPoint))
+  ([controlPoint]
+   (let [newX (mutateControlPointValue (get controlPoint :x))
+         newY (mutateControlPointValue (get controlPoint :y))]
+     (assoc controlPoint :x newX :y newY))))
 
-(defn mutateBitOperationIndex
-  "Mutates the operation index for single bit operations."
-  [transform mutationRate]
-  (if (<= (rand) mutationRate)
-    (let [newBitOperationIndex (rand-int 32)]
-      (assoc transform :bitOperationIndex newBitOperationIndex))
-    transform))
-
-(defn mutateOperationAndDataOfTransforms
-  "Mutates the data and operation in each Transform in the given Transformation Vector
-   according to the mutation rate."
-  [transformationVector mutationRate]
-  (loop [transforms (get transformationVector :transformations)
-         mutatedTransforms []]
-    (if (empty? transforms)
-      (assoc transformationVector :transformations mutatedTransforms)
-      (let [mutatedTransform (mutateData (first transforms) mutationRate)
-            mutatedTransform (mutateOperation mutatedTransform mutationRate)
-            mutatedTransform (mutateBitOperationIndex mutatedTransform mutationRate)]
-        (recur (rest transforms) (conj mutatedTransforms mutatedTransform))))))
-
+(defn mutateControlPointsInBezierCurve
+  "Mutates the Control Points in the given Bezier Curve."
+  [bezierCurve mutationRate]
+  (loop [mutatedControlPoints []
+         controlPoints (get :controlPointVector bezierCurve)]
+    (if (empty? controlPoints)
+      mutatedControlPoints
+      (recur (conj mutatedControlPoints (mutateControlPoint (first controlPoints) mutationRate))
+             (rest controlPoints)))))
 ;;----------------------------------------------------------------------------------
 ;;-----------------------------------------------------------------------------------
 ;; Main Mutation Function
 ;;-----------------------------------------------------------------------------------
 
-(defn mutateTransformationVector
-  "Mutates the given Transformation Vector."
-  [context transformationVector mutationRate]
-  (let [tv (addTransformationsToTransformationVector context
-                                                     transformationVector
-                                                     mutationRate)
-        tv (removeTransformationsFromTransformationVector context
-                                                          transformationVector
-                                                          mutationRate)
-        tv (mutateOperationAndDataOfTransforms transformationVector
-                                               mutationRate)]
-    tv))
-
-(defn mutatePopulationMember
-  "Mutates the given population using the method indicated
-   by the type of the population members."
-  [context populationMember populationType mutationRate]
-  (cond
-    (= 1 populationType) (mutateTransformationVector context
-                                                     populationMember
-                                                     mutationRate)
-    ;;CASE OTHER THAN TRANSFORMATION VECTOR
-    ))
+(defn mutateBezierCurve
+  "Mutates the given Bezier Curve."
+  [bezierCurve mutationRate]
+  (let [mutatedBCurve (mutateControlPointsInBezierCurve bezierCurve mutationRate)
+        mutatedBCurve (randomlyRemoveControlPointFromBezierCurve bezierCurve mutationRate)
+        mutatedBCurve (addRandomControlPointToBezierCurve bezierCurve mutationRate)]
+    mutatedBCurve))
 
 (defn mutate
-  "Takes in the algortihm context and mutates all population
+  "Takes in the algorithm context and mutates all population
    members according to the mutation rate."
   [context]
   (let [population (get context :population)
-        populationType (get context :populationType)
         mutationRate (get context :mutationRate)]
     (loop [pop population
            newPop []]
       (if (empty? pop)
         (assoc context :population newPop)
         (let [popMember (first pop)
-              mutatedPopMember (mutatePopulationMember context
-                                                       popMember
-                                                       populationType
-                                                       mutationRate)]
+              mutatedPopMember (mutateBezierCurve popMember mutationRate)]
           (recur (rest pop) (conj newPop mutatedPopMember)))))))
