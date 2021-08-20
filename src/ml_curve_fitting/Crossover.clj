@@ -3,81 +3,71 @@
   (:require [binary-association-simulator.BinaryAssociator :as binary-associator]
             [binary-association-simulator.GeneticAlgorithm :as GA]))
 
-(defn crossoverOperation
-  "Assimilates the operation of Transformation A
-   into Transformation B according to the crossover rate."
-  [crossoverRate A B]
-  (if (< (rand) crossoverRate)
-    (assoc B :operation (get A :operation))
-    B))
+(defn takeFitterParent
+  "Returns the fitter Bezier Curve of the given two."
+  [parentA parentB]
+  (let [aFitness (get parentA :fitness)
+        bFitness (get parentB :fitness)]
+    (if (> aFitness bFitness)
+      parentA
+      parentB)))
 
-(defn crossoverBitOperationIndex
-  "Assimilates the bit operation index of Transformation A
-   into Transformation B according to the crossover rate."
-  [crossoverRate A B]
-  (if (< (rand) crossoverRate)
-    (assoc B :bitOperationIndex (get A :bitOperationIndex))
-    B))
+(defn takeVectorByLength
+  "Given the operator < or >= return the vector that meets the check."
+  [operator vectorA vectorB]
+  (let [vectorALength (count vectorA)
+        vectorBLength (count vectorB)]
+    (if (operator vectorALength vectorBLength)
+      vectorA
+      vectorB)))
 
-(defn crossoverTransforms
-  "Crosses over the two given Transforms."
-  [crossoverRate transform1 transform2]
-  (let [newTransform transform1
-        newTransform (crossoverOperation crossoverRate
-                                         transform2
-                                         newTransform)
-        newTransform (crossoverBitOperationIndex crossoverRate
-                                                 transform2
-                                                 newTransform)]
-    newTransform))
+(defn takeRemainingItems
+  "Flips a coin. If it succeeds then all of vector b's elements will be added into
+   the tail of a."
+  [a b]
+  (if (< (rand) 0.5)
+    (into a b)
+    a))
 
-(defn compareTransformationVectorTransformationsLength
-  "Compares the given Transformation Vectors and returns the one
-   that the given comparison function proves to be true. The
-   acceptable comparison functions are: <= and >"
-  [tv1 tv2 operator]
-  (let [tv1Transformations (get tv1 :transformations)
-        tv1Count (count tv1Transformations)
-        tv2Transformations (get tv2 :transformations)
-        tv2Count (count tv2Transformations)]
-    (if (operator tv1Count tv2Count)
-      tv1Transformations
-      tv2Transformations)))
+(defn crossoverControlPoints
+  "Crosses over the X and Y data in the given Control Points. Flip a coin on which
+   parent to take X and Y from. This may need to be revisited."
+  [pointA pointB]
+  (if (< (rand) 0.5)
+    (assoc pointA :x (get pointB :x))
+    (assoc pointA :y (get pointB :y))))
 
-(defn crossoverGivenTransformationVectors
-  "Crosses over the two given Transformation Vectors"
-  [crossoverRate tv1 tv2]
-  (let [tvTransforms1 (compareTransformationVectorTransformationsLength tv1
-                                                                        tv2
-                                                                        <=)
-        tvTransforms2 (compareTransformationVectorTransformationsLength tv1
-                                                                        tv2
-                                                                        >)]
-    (loop [tvt1 tvTransforms1
-           tvt2 tvTransforms2
-           newTransforms []]
-      (if (empty? tvt1)
-        (assoc tv1 :transformations newTransforms)
-        (let [transformA (first tvt1)
-              transformB (first tvt2)
-              newTransform (crossoverTransforms crossoverRate
-                                                transformA
-                                                transformB)]
-          (recur (rest tvt1)
-                 (rest tvt2)
-                 (conj newTransforms newTransform)))))))
+(defn crossoverControlPointVectors
+  "Crosses over the given Control Point vector. If vectors are of differing sizes
+   then they are crossed over in order up until the point that the shorter vector
+   is spent. Then if there are remaining items in the longer vector there is a
+   50/50 chance they will be taken along with the new vector."
+  [crossoverRate pointVectorA pointVectorB]
+  (loop [shorterVector (takeVectorByLength < pointVectorA pointVectorB)
+         longerVector (takeVectorByLength >= pointVectorA pointVectorB)
+         newVector []]
+    (if (empty? shorterVector)
+      (takeRemainingItems newVector longerVector)
+      (let [pointA (first shorterVector)
+            pointB (first longerVector)
+            resultantPoint (crossoverControlPoints pointA pointB)]
+        (recur (rest shorterVector)
+               (rest longerVector)
+               (conj newVector resultantPoint))))))
 
-(defn crossoverGivenMembers
-  "Crosses over the given members according to the type of member."
-  [algorithmContext member1 member2]
-  (let [populationType (get algorithmContext :populationType)
-        crossoverRate (get algorithmContext :crossoverRate)]
-    (if (= 1 populationType)
-      (crossoverGivenTransformationVectors crossoverRate
-                                           member1
-                                           member2)
-      ;;CASE OTHER THAN TRANSFORMATION VECTOR
-      )))
+(defn crossoverGivenBezierCurves
+  "Crosses over the data between the given Bezier Curves. If the Crossover
+   attempt fails then the fitter parent is taken."
+  ([crossoverRate curveA curveB]
+   (if (< (rand) crossoverRate)
+     (crossoverGivenBezierCurves curveA curveB)
+     (takeFitterParent curveA curveB)))
+  ([curveA curveB]
+   (let [controlPointVectorA (get curveA :controlPointVector)
+         controlPointVectorB (get curveB :controlPointVector)
+         crossedOverVectors (crossoverControlPointVectors controlPointVectorA
+                                                          controlPointVectorB)]
+     (assoc curveA :controlPointVector crossedOverVectors))))
 
 (defn crossover
   "Crosses over members of the selected population. Members come in in pairs
@@ -91,7 +81,8 @@
       (assoc algorithmContext :population newPopulation)
       (let [member1 (first population)
             member2 (first (rest population))
-            newMember (crossoverGivenMembers algorithmContext
+            crossoverRate (get algorithmContext :crossoverRate)
+            newMember (crossoverGivenMembers crossoverRate
                                              member1
                                              member2)]
         (recur (rest (rest population))
