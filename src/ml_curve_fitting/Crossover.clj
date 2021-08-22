@@ -1,14 +1,13 @@
 
 (ns binary-association-simulator.Crossover
-  (:require [binary-association-simulator.BinaryAssociator :as binary-associator]
-            [binary-association-simulator.GeneticAlgorithm :as GA]))
+  (:require [ml_curve_fitting.BezierCurve :as bCurve]))
 
 (defn takeFitterParent
   "Returns the fitter Bezier Curve of the given two."
   [parentA parentB]
   (let [aFitness (get parentA :fitness)
         bFitness (get parentB :fitness)]
-    (if (> aFitness bFitness)
+    (if (< aFitness bFitness)
       parentA
       parentB)))
 
@@ -66,7 +65,8 @@
    (let [controlPointVectorA (get curveA :controlPointVector)
          controlPointVectorB (get curveB :controlPointVector)
          crossedOverVectors (crossoverControlPointVectors controlPointVectorA
-                                                          controlPointVectorB)]
+                                                          controlPointVectorB)
+         crossedOverVectors (bCurve/resetXIndecesOfControlPointVector crossedOverVectors)]
      (assoc curveA :controlPointVector crossedOverVectors))))
 
 (defn crossover
@@ -82,8 +82,8 @@
       (let [member1 (first population)
             member2 (first (rest population))
             crossoverRate (get algorithmContext :crossoverRate)
-            newMember (crossoverGivenMembers crossoverRate
-                                             member1
-                                             member2)]
+            newMember (crossoverGivenBezierCurves crossoverRate
+                                                  member1
+                                                  member2)]
         (recur (rest (rest population))
                (conj newPopulation newMember))))))

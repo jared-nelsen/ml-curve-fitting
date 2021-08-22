@@ -28,21 +28,6 @@
   [vector index]
   (vec (concat (subvec vector 0 index) (subvec vector (inc index)))))
 
-(defn resetXIndecesOfControlPointVector
-  "Sets the X indeces in each Control Point in the given Control Point vector to its own position
-   in the given vector."
-  [controlPointVector]
-  (loop [currentIndex 0
-         updatedControlPointVector []
-         controlPointVector controlPointVector]
-    (if (empty? controlPointVector)
-      updatedControlPointVector
-      (let [currentControlPoint (first controlPointVector)
-            updatedControlPoint (assoc currentControlPoint :x currentIndex)]
-        (recur (inc currentIndex)
-               (conj updatedControlPointVector updatedControlPoint)
-               (rest controlPointVector))))))
-
 (defn addRandomControlPointToBezierCurve
   "Adds a random Control Point to a random index in the given Bezier Curve."
   ([bezierCurve mutationRate]
@@ -58,7 +43,7 @@
          updatedControlPointVector (addItemToVectorAtIndex controlPointVector
                                                            newRandomControlPoint
                                                            addIndex)
-         updatedControlPointVector (resetXIndecesOfControlPointVector updatedControlPointVector)]
+         updatedControlPointVector (bCurve/resetXIndecesOfControlPointVector updatedControlPointVector)]
      (assoc bezierCurve :controlPointVector updatedControlPointVector))))
 
 (defn randomlyRemoveControlPointFromBezierCurve
@@ -72,7 +57,7 @@
          removeIndex (rand-int (count controlPointVector))
          updatedControlPointVector (removeItemFromVectorAtIndex controlPointVector
                                                                 removeIndex)
-         updatedControlPointVector (resetXIndecesOfControlPointVector updatedControlPointVector)]
+         updatedControlPointVector (bCurve/resetXIndecesOfControlPointVector updatedControlPointVector)]
      (assoc bezierCurve :controlPointVector updatedControlPointVector))))
 
 ;;----------------------------------------------------------------------------------

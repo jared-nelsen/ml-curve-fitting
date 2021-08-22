@@ -8,6 +8,22 @@
   [low high]
   (+ low (* (rand) ( - high low))))
 
+(defn resetXIndecesOfControlPointVector
+  "Sets the X indeces in each Control Point in the given Control Point vector to its own position
+   in the given vector."
+  [controlPointVector]
+  (loop [currentIndex 1
+         updatedControlPointVector []
+         controlPointVector controlPointVector]
+    (if (empty? controlPointVector)
+      updatedControlPointVector
+      (let [currentControlPoint (first controlPointVector)
+            updatedControlPoint (assoc currentControlPoint :x currentIndex)]
+        (recur (inc currentIndex)
+               (conj updatedControlPointVector updatedControlPoint)
+               (rest controlPointVector))))))
+
+
 (defrecord ControlPoint [x y])
 
 (defn randomControlPoint
