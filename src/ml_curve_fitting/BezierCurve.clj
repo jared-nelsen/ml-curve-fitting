@@ -23,7 +23,6 @@
                (conj updatedControlPointVector updatedControlPoint)
                (rest controlPointVector))))))
 
-
 (defrecord ControlPoint [x y])
 
 (defn randomControlPoint

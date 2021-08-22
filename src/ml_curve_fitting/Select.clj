@@ -12,9 +12,9 @@
       (if (empty? population)
         fittestMember
         (let [current (first population)
-              currentHamming (get current :hammingDistanceTotal)
-              currentBest (get fittestMember :hammingDistanceTotal)]
-          (if (< currentHamming currentBest)
+              currentFitness (get current :fitness)
+              currentBest (get fittestMember :fitness)]
+          (if (< currentFitness currentBest)
             (recur (rest population) current)
             (recur (rest population) fittestMember))))))
 
@@ -69,12 +69,12 @@
   [algorithmContext]
   (let [populationCount (get algorithmContext :populationCount)
         population (get algorithmContext :population)
-        tournamentSize (int (* populationCount 0.5))]
+        tournamentSize (int (* populationCount 0.2))]
     (loop [newPopulation []
            remainingSelects populationCount]
       (if (= 0 remainingSelects)
         (assoc algorithmContext :population newPopulation)
         (let [selectedParents (selectParents population
                                              tournamentSize)]
-          (recur (into [] (concat newPopulation selectedParents))
+          (recur (into newPopulation selectedParents)
                  (dec remainingSelects)))))))
