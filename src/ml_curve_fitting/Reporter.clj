@@ -1,7 +1,5 @@
 
-(ns binary-association-simulator.Reporter
-  (:require [binary-association-simulator.BinaryAssociator :as binary-associator]
-            [binary-association-simulator.GeneticAlgorithm :as GA]))
+(ns ml_curve_fitting.Reporter)
 
 (defn findBestFitness
   "Returns the hamming distance value of the most fit member of
@@ -12,7 +10,7 @@
     (if (empty? pop)
       bestFitness
       (let [current (first pop)
-            currFitness (get current :hammingDistanceTotal)]
+            currFitness (get current :fitness)]
         (if (< currFitness bestFitness)
           (recur currFitness (rest pop))
           (recur bestFitness (rest pop)))))))
@@ -32,7 +30,7 @@
     (if (empty? pop)
       (double (/ fitnessSum (count population)))
       (let [current (first pop)
-            currentFitness (get current :hammingDistanceTotal)]
+            currentFitness (get current :fitness)]
         (recur (rest pop) (+ fitnessSum currentFitness))))))
 
 (defn report

@@ -1,6 +1,4 @@
-(ns binary-association-simulator.Evaluation
-  (:require [binary-association-simulator.BinaryAssociator :as binary-associator]
-            [binary-association-simulator.GeneticAlgorithm :as GA]))
+(ns ml_curve_fitting.Evaluation)
 
 (defn integerToThirtyTwoBitString
   "Takes any integer and returns its string representation in 32 bits"
@@ -43,28 +41,28 @@
             (recur (inc diffs) (rest xS) (rest yS))
             (recur diffs (rest xS) (rest yS))))))))
 
-(defn evaluateTransformationVectorOnData
-  "Evaluates the given Transformation Vector using the given data and
-   sets the resultant fitnesses on it."
-  [transformationVector data]
-  (loop [inputData (get data :inputFrame)
-         outputData (get data :outputFrame)
-         hammingDistanceTotal 0]
-    (if (empty? inputData)
-      (assoc transformationVector
-             :hammingDistanceTotal hammingDistanceTotal)
-      (let [in (first inputData)
-            out (first outputData)
-            actual (binary-associator/propogateThroughTransformationVector
-                    transformationVector
-                    in)]
-        (if (not= out actual)
-          (recur (rest inputData)
-                 (rest outputData)
-                 (+ hammingDistanceTotal (hammingDistance out actual)))
-          (recur (rest inputData)
-                 (rest outputData)
-                 hammingDistanceTotal))))))
+;; (defn evaluateTransformationVectorOnData
+;;   "Evaluates the given Transformation Vector using the given data and
+;;    sets the resultant fitnesses on it."
+;;   [transformationVector data]
+;;   (loop [inputData (get data :inputFrame)
+;;          outputData (get data :outputFrame)
+;;          hammingDistanceTotal 0]
+;;     (if (empty? inputData)
+;;       (assoc transformationVector
+;;              :hammingDistanceTotal hammingDistanceTotal)
+;;       (let [in (first inputData)
+;;             out (first outputData)
+;;             actual (binary-associator/propogateThroughTransformationVector
+;;                     transformationVector
+;;                     in)]
+;;         (if (not= out actual)
+;;           (recur (rest inputData)
+;;                  (rest outputData)
+;;                  (+ hammingDistanceTotal (hammingDistance out actual)))
+;;           (recur (rest inputData)
+;;                  (rest outputData)
+;;                  hammingDistanceTotal))))))
 
 (defn evaluateTransformationVector
   [transformationVector algorithmContext]

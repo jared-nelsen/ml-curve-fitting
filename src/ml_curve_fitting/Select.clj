@@ -1,7 +1,5 @@
 
-(ns binary-association-simulator.Select
-  (:require [binary-association-simulator.BinaryAssociator :as binary-associator]
-            [binary-association-simulator.GeneticAlgorithm :as GA]))
+(ns ml_curve_fitting.Select)
 
 (defn selectFittestPopulationMemberHammingDistance
   "Selects the fittest member of the given

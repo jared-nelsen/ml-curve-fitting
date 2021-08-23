@@ -1,8 +1,8 @@
 (ns binary-association-simulator.core
-  (:require [binary-association-simulator.GeneticAlgorithm :as test1])
+  (:require [ml_curve_fitting.GeneticAlgorithm :as GA])
   (:gen-class))
 
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Starts the Genetic Algorithm."
   [& args]
-  (test1/test1))
+  (GA/evolve))

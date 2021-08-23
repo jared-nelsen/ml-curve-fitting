@@ -1,5 +1,5 @@
 
-(ns binary-association-simulator.Crossover
+(ns ml_curve_fitting.Crossover
   (:require [ml_curve_fitting.BezierCurve :as bCurve]))
 
 (defn takeFitterParent
