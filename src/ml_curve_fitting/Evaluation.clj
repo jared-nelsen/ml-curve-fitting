@@ -1,99 +1,81 @@
 (ns ml_curve_fitting.Evaluation)
 
-(defn integerToThirtyTwoBitString
-  "Takes any integer and returns its string representation in 32 bits"
-  [x]
-  (let [bin (Integer/toBinaryString x)
-        diff (- 32 (count bin))
-        prefix (clojure.string/join (repeat diff "0"))]
-    (str prefix bin)))
+;; A Bezier curve is defined by its Control Points. To evaluate the given
+;; Bezier Curve agaist the given Data we must generate the Y components
+;; of the given Bezier Curve at the given X components of the Data to be
+;; fit and calculate the error which is the absolute value of the differences
+;; between the given Y components.
+;; We would also like to calculate a lot of points on the line to draw it.
+;;
+;; Here is the psuedocode:
+;;
+;;     1. Generate a range of M points from 1 to N of the Bezier curve to
+;;        draw.
+;;     2. For each Point P in points to fit calculate the Y component of the
+;;        point on the Bezier Curve that lies at the X of P.
+;;     3. For each of the generated points calculate the absolute value of
+;;        the difference between the Ys.
+;;     4. Sum the absolute differences.
 
-;; This is a potential killer bug when compiling compute graphs
-;; in future. Need to reevaluate if this is the right strategey.
-;; Can run some automated tests with the operate function in
-;; BinaryAssociator to try to find the bug. For now this prevents
-;; overflow errors.
-(defn safeIntegerToThirtyTwoBitString
-  "Takes any integer and returns its string representation in 32 bits.
-   In the case that the given integer is outside the bounds of valid
-   integer values then the binary representation of the max integer
-   in Java is returned."
-  [x]
-  (try
-    (integerToThirtyTwoBitString x)
-    (catch Exception e (if (>= x 0)
-                         (integerToThirtyTwoBitString (Integer/MAX_VALUE))
-                         (integerToThirtyTwoBitString (Integer/MIN_VALUE))))))
+(defrecord Point [x y])
 
-(defn hammingDistance
-  "Calculates the hamming distance between x and y."
-  [x y]
-  (let [xS (safeIntegerToThirtyTwoBitString x)
-        yS (safeIntegerToThirtyTwoBitString y)]
-    (loop [diffs 0
-           xS xS
-           yS yS]
-      (if (empty? xS)
-        diffs
-        (let [xChar (first xS)
-              yChar (first yS)]
-          (if (not= xChar yChar)
-            (recur (inc diffs) (rest xS) (rest yS))
-            (recur diffs (rest xS) (rest yS))))))))
+(defn Cb
+  "Calculates the B component of C."
+  [coeff k]
+  (loop [coeff coeff
+         x 1]
+    (if (> x k)
+      coeff
+      (recur (/ coeff x)
+             (inc x)))))
 
-;; (defn evaluateTransformationVectorOnData
-;;   "Evaluates the given Transformation Vector using the given data and
-;;    sets the resultant fitnesses on it."
-;;   [transformationVector data]
-;;   (loop [inputData (get data :inputFrame)
-;;          outputData (get data :outputFrame)
-;;          hammingDistanceTotal 0]
-;;     (if (empty? inputData)
-;;       (assoc transformationVector
-;;              :hammingDistanceTotal hammingDistanceTotal)
-;;       (let [in (first inputData)
-;;             out (first outputData)
-;;             actual (binary-associator/propogateThroughTransformationVector
-;;                     transformationVector
-;;                     in)]
-;;         (if (not= out actual)
-;;           (recur (rest inputData)
-;;                  (rest outputData)
-;;                  (+ hammingDistanceTotal (hammingDistance out actual)))
-;;           (recur (rest inputData)
-;;                  (rest outputData)
-;;                  hammingDistanceTotal))))))
+(defn Ca
+  "Calculates the A component of C."
+  [coeff n k]
+  (loop [coeff coeff
+         x (- n (+ k 1))]
+    (if (> x n)
+      coeff
+      (recur (* coeff x)
+             (inc x)))))
 
-(defn evaluateTransformationVector
-  [transformationVector algorithmContext]
-  (evaluateTransformationVectorOnData transformationVector
-                                      (get algorithmContext :data)))
+(defn C
+  "Calculates the Binary Coefficient for N, K."
+  [n k]
+  (Cb (Ca 1 n k) k))
+
+(defn generatePointOnBezierCurve
+  "Generates the X,Y point on the given Bezier curve at the given X."
+  [bCurve x])
+
+
+
 
 (defn evaluatePopulation
-  "Evaluates the population found in the
-   given algorithm context with the given evaluation function."
+  "Evaluates the population found in the given algorithm context with the
+   given evaluation function."
   [algorithmContext evaluationFunction]
   (let [populationCount (get algorithmContext :populationCount)]
     (loop [population (get algorithmContext :population)
            newPopulation []
-           bestHammingDistanceScore 9999999
-           hammingDistanceSum 0]
+           bestFitness (Integer/MAX_VALUE)
+           fitnessSum 0]
       (if (empty? population)
-        (let [hammingDistanceAverage (/ hammingDistanceSum populationCount)]
+        (let [fitnessAverage (/ fitnessSum populationCount)]
           (assoc algorithmContext
                  :population newPopulation
-                 :bestFitness bestHammingDistanceScore
-                 :avgFitness hammingDistanceAverage))
+                 :bestFitness bestFitness
+                 :avgFitness fitnessAverage))
         (let [member (first population)
               evaluatedMember (evaluationFunction member
                                                   algorithmContext)
               updatedPopulation (conj newPopulation evaluatedMember)
-              hammingDistance (get evaluatedMember :hammingDistanceTotal)
-              newBestHamming (min hammingDistance bestHammingDistanceScore)]
+              currentMemberFitness (get evaluatedMember :fitness)
+              newBestFitness (min currentMemberFitness bestFitness)]
           (recur (rest population)
                  updatedPopulation
-                 newBestHamming
-                 (+ hammingDistance hammingDistanceSum)))))))
+                 newBestFitness
+                 (+ currentMemberFitness fitnessSum)))))))
 
 (defn evaluateTransformationVectorPopulation
   "Evaluates the population of Transformation Vectors found in
