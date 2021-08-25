@@ -1,4 +1,4 @@
-(ns ml_curve_fitting.Data)
+(ns ml-curve-fitting.Data)
 
 (defn randomDoubleInARange
   [low high]

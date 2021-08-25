@@ -1,5 +1,5 @@
-(ns binary-association-simulator.core
-  (:require [ml_curve_fitting.GeneticAlgorithm :as GA])
+(ns ml-curve-fitting.core
+  (:require [ml-curve-fitting.GeneticAlgorithm :as GA])
   (:gen-class))
 
 (defn -main

@@ -1,5 +1,5 @@
 
-(ns ml_curve_fitting.BezierCurve)
+(ns ml-curve-fitting.BezierCurve)
 
 (def defaultYMin -10.0)
 (def defaultYMax 10.0)

@@ -1,6 +1,6 @@
 
-(ns ml_curve_fitting.Mutate
-  (:require [ml_curve_fitting.BezierCurve :as bCurve]))
+(ns ml-curve-fitting.Mutate
+  (:require [ml-curve-fitting.BezierCurve :as bCurve]))
 
 (def valueBumpLow -0.001)
 (def valueBumpHigh 0.001)

@@ -1,5 +1,5 @@
 
-(ns ml_curve_fitting.Crossover
+(ns ml-curve-fitting.Crossover
   (:require [ml_curve_fitting.BezierCurve :as bCurve]))
 
 (defn takeFitterParent

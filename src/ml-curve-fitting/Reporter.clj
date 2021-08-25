@@ -1,5 +1,5 @@
 
-(ns ml_curve_fitting.Reporter)
+(ns ml-curve-fitting.Reporter)
 
 (defn findBestFitness
   "Returns the hamming distance value of the most fit member of

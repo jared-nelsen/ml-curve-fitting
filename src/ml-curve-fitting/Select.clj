@@ -1,5 +1,5 @@
 
-(ns ml_curve_fitting.Select)
+(ns ml-curve-fitting.Select)
 
 (defn selectFittestPopulationMemberHammingDistance
   "Selects the fittest member of the given

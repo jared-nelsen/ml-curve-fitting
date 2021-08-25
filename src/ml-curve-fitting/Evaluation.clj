@@ -1,4 +1,4 @@
-(ns ml_curve_fitting.Evaluation
+(ns ml-curve-fitting.Evaluation
   (:require '[org.clojure/math.numeric-tower :as math]))
 
 ;; A Bezier curve is defined by its Control Points. To evaluate the given
