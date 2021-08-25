@@ -31,7 +31,8 @@
    :globalBestFitness (Integer/MAX_VALUE)
    :avgFitness (Double/MAX_VALUE)
    :mutationRate mutationRate
-   :crossoverRate crossoverRate})
+   :crossoverRate crossoverRate
+   :bCurveDrawingInterval .05})
 
 (defn evolve
   "Performs the Genetic Algorithm on the generated algorithm context."
