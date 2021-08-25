@@ -41,7 +41,7 @@
    then they are crossed over in order up until the point that the shorter vector
    is spent. Then if there are remaining items in the longer vector there is a
    50/50 chance they will be taken along with the new vector."
-  [crossoverRate pointVectorA pointVectorB]
+  [pointVectorA pointVectorB]
   (loop [shorterVector (takeVectorByLength < pointVectorA pointVectorB)
          longerVector (takeVectorByLength >= pointVectorA pointVectorB)
          newVector []]

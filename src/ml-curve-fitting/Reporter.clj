@@ -18,20 +18,10 @@
 (defn detectNewGlobalBest
   "Detects if a new global best has been found."
   [context newBestFitness]
-  (let [currentGlobalBest (get context :globalBestFitness)]
+  (let [#break currentGlobalBest (get context :globalBestFitness)]
     (if (< newBestFitness currentGlobalBest)
       newBestFitness
       currentGlobalBest)))
-
-(defn calculateAvgFitness
-  [population]
-  (loop [pop population
-         fitnessSum 0]
-    (if (empty? pop)
-      (double (/ fitnessSum (count population)))
-      (let [current (first pop)
-            currentFitness (get current :fitness)]
-        (recur (rest pop) (+ fitnessSum currentFitness))))))
 
 (defn report
   [context]
