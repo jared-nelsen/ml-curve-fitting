@@ -4,8 +4,8 @@
   [low high]
   (+ low (* (rand) ( - high low))))
 
-(def pointMinY -10.0)
-(def pointMaxY 10.0)
+(def pointMinY -1.0)
+(def pointMaxY 1.0)
 (def defaultPointsToFit 5)
 
 (defrecord Point [x y])

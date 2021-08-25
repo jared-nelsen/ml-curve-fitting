@@ -18,7 +18,7 @@
 (defn detectNewGlobalBest
   "Detects if a new global best has been found."
   [context newBestFitness]
-  (let [#break currentGlobalBest (get context :globalBestFitness)]
+  (let [currentGlobalBest (get context :globalBestFitness)]
     (if (< newBestFitness currentGlobalBest)
       newBestFitness
       currentGlobalBest)))
@@ -29,7 +29,7 @@
         population (get context :population)
         bestFitness (findBestFitness population)
         globalBest (detectNewGlobalBest context bestFitness)
-        avgFitness (calculateAvgFitness population)]
+        avgFitness 1] ;;temporary
     (do 
       (println (str "Generation: " generation
                     ", Best Fitness: " bestFitness

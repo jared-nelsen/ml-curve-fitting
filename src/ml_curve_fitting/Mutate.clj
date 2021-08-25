@@ -67,10 +67,8 @@
 
 (defn mutateControlPointValue
   "Mutates the given value in the bumping range according to the mutation rate."
-  [value mutationRate]
-  (if (<= (rand) mutationRate)
-    (+ value (randomDoubleInARange valueBumpLow valueBumpHigh))
-    value))
+  [value]
+  (+ value (randomDoubleInARange valueBumpLow valueBumpHigh)))
 
 (defn mutateControlPoint
   "Mutates the X and Y values of the given Control Point."
@@ -87,7 +85,7 @@
   "Mutates the Control Points in the given Bezier Curve."
   [bezierCurve mutationRate]
   (loop [mutatedControlPoints []
-         controlPoints (get :controlPointVector bezierCurve)]
+         controlPoints (get bezierCurve :controlPointVector)]
     (if (empty? controlPoints)
       mutatedControlPoints
       (recur (conj mutatedControlPoints (mutateControlPoint (first controlPoints) mutationRate))
@@ -100,10 +98,8 @@
 (defn mutateBezierCurve
   "Mutates the given Bezier Curve."
   [bezierCurve mutationRate]
-  (let [mutatedBCurve (mutateControlPointsInBezierCurve bezierCurve mutationRate)
-        mutatedBCurve (randomlyRemoveControlPointFromBezierCurve bezierCurve mutationRate)
-        mutatedBCurve (addRandomControlPointToBezierCurve bezierCurve mutationRate)]
-    mutatedBCurve))
+  (let [mutatedBCurve (mutateControlPointsInBezierCurve bezierCurve mutationRate)]
+    (assoc bezierCurve :controlPointVector mutatedBCurve)))
 
 (defn mutate
   "Takes in the algorithm context and mutates all population

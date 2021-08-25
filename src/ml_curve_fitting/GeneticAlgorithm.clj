@@ -8,8 +8,8 @@
             [ml-curve-fitting.Evaluation :as evaluate]
             [ml-curve-fitting.Reporter :as reporter]))
 
-(def populationCount 10)
-(def mutationRate 0.05)
+(def populationCount 100)
+(def mutationRate 0.8)
 (def crossoverRate 0.8)
 (def controlPointCount 5)
 

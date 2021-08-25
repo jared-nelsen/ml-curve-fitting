@@ -1,5 +1,4 @@
-(ns ml-curve-fitting.Evaluation
-  (:require '[org.clojure/math.numeric-tower :as math]))
+(ns ml-curve-fitting.Evaluation)
 
 ;; A Bezier curve is defined by its Control Points. To evaluate the given
 ;; Bezier Curve agaist the given Data we must generate the Y components
@@ -56,8 +55,8 @@
         (Point. x y)
         (let [controlPoint (nth controlPoints i)
               c (C n i)
-              m1 (int (Math/pow (- 1 xt) (- n i)))
-              m2 (int (Math/pow xt i))
+              m1 (Math/pow (- 1 xt) (- n i))
+              m2 (Math/pow xt i)
               bin (* c (* m1 m2))
               xi (+ x (* bin (get controlPoint :x)))
               yi (+ y (* bin (get controlPoint :y)))]
@@ -91,11 +90,11 @@
   "Calculates the sum of the absolute values of the differences between
    the Y coordinates for each X of each Data Point in the Data to fit."
   [bCurve data]
-  (let [controlPoints (get bCurve :controlPointVector)
-        generatedPoints (generateCorrespondingPointsOnBCurveGivenControlPoints controlPoints
-                                                                               data)
-        errorSum 0]
-    (if (empty? controlPoints)
+  (loop [controlPoints (get bCurve :controlPointVector)
+         generatedPoints (generateCorrespondingPointsOnBCurveGivenControlPoints controlPoints
+                                                                                data)
+         errorSum 0]
+    (if (empty? generatedPoints)
       errorSum
       (let [controlPoint (first controlPoints)
             controlY (get controlPoint :y)
@@ -116,7 +115,8 @@
    given evaluation function."
   [algorithmContext]
   (let [populationCount (get algorithmContext :populationCount)
-        data (get algorithmContext :data)]
+        dataContainer (get algorithmContext :data)
+        data (get dataContainer :points)]
     (loop [population (get algorithmContext :population)
            newPopulation []
            bestFitness (Integer/MAX_VALUE)

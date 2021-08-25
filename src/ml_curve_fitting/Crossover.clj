@@ -1,6 +1,6 @@
 
 (ns ml-curve-fitting.Crossover
-  (:require [ml_curve_fitting.BezierCurve :as bCurve]))
+  (:require [ml-curve-fitting.BezierCurve :as bCurve]))
 
 (defn takeFitterParent
   "Returns the fitter Bezier Curve of the given two."
