@@ -30,8 +30,8 @@
 
 (defn addRandomControlPointToBezierCurve
   "Adds a random Control Point to a random index in the given Bezier Curve."
-  ([bezierCurve mutationRate]
-   (if (< (rand) mutationRate)
+  ([bezierCurve context]
+   (if (< (rand) (get context :addRemoveMutationRate))
      (addRandomControlPointToBezierCurve bezierCurve)
      bezierCurve))
   ([bezierCurve]
@@ -48,8 +48,8 @@
 
 (defn randomlyRemoveControlPointFromBezierCurve
   "Randomly removes a Control Point from the given Bezier Curve."
-  ([bezierCurve mutationRate]
-   (if (< (rand) mutationRate)
+  ([bezierCurve context]
+   (if (< (rand) (get context :addRemoveMutationRate))
      (randomlyRemoveControlPointFromBezierCurve bezierCurve)
      bezierCurve))
   ([bezierCurve]
@@ -72,8 +72,8 @@
 
 (defn mutateControlPoint
   "Mutates the X and Y values of the given Control Point."
-  ([controlPoint mutationRate]
-   (if (< (rand) mutationRate)
+  ([controlPoint context]
+   (if (< (rand) (get context :positionMutationRate))
      (mutateControlPoint controlPoint)
      controlPoint))
   ([controlPoint]
@@ -83,12 +83,12 @@
 
 (defn mutateControlPointsInBezierCurve
   "Mutates the Control Points in the given Bezier Curve."
-  [bezierCurve mutationRate]
+  [bezierCurve context]
   (loop [mutatedControlPoints []
          controlPoints (get bezierCurve :controlPointVector)]
     (if (empty? controlPoints)
       mutatedControlPoints
-      (recur (conj mutatedControlPoints (mutateControlPoint (first controlPoints) mutationRate))
+      (recur (conj mutatedControlPoints (mutateControlPoint (first controlPoints) context))
              (rest controlPoints)))))
 ;;----------------------------------------------------------------------------------
 ;;-----------------------------------------------------------------------------------
@@ -97,20 +97,21 @@
 
 (defn mutateBezierCurve
   "Mutates the given Bezier Curve."
-  [bezierCurve mutationRate]
-  (let [mutatedBCurve (mutateControlPointsInBezierCurve bezierCurve mutationRate)]
+  [bezierCurve context]
+  (let [mutatedBCurve (randomlyRemoveControlPointFromBezierCurve bezierCurve context)
+        mutatedBCurve (addRandomControlPointToBezierCurve bezierCurve context)
+        mutatedBCurve (mutateControlPointsInBezierCurve bezierCurve context)]
     (assoc bezierCurve :controlPointVector mutatedBCurve)))
 
 (defn mutate
   "Takes in the algorithm context and mutates all population
    members according to the mutation rate."
   [context]
-  (let [population (get context :population)
-        mutationRate (get context :mutationRate)]
+  (let [population (get context :population)]
     (loop [pop population
            newPop []]
       (if (empty? pop)
         (assoc context :population newPop)
         (let [popMember (first pop)
-              mutatedPopMember (mutateBezierCurve popMember mutationRate)]
+              mutatedPopMember (mutateBezierCurve popMember context)]
           (recur (rest pop) (conj newPop mutatedPopMember)))))))

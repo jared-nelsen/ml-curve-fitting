@@ -8,10 +8,11 @@
             [ml-curve-fitting.Evaluation :as evaluate]
             [ml-curve-fitting.Reporter :as reporter]))
 
-(def populationCount 100)
-(def mutationRate 0.8)
+(def populationCount 10)
+(def positionMutationRate 0.8)
+(def addRemoveMutationRate 0.3)
 (def crossoverRate 0.8)
-(def controlPointCount 5)
+(def controlPointCount 9)
 
 (defn generateBezierCurvePopulation
   []
@@ -31,7 +32,8 @@
    :bestFitness (Integer/MAX_VALUE)
    :globalBestFitness (Integer/MAX_VALUE)
    :avgFitness (Double/MAX_VALUE)
-   :mutationRate mutationRate
+   :positionMutationRate positionMutationRate
+   :addRemoveMutationRate addRemoveMutationRate
    :crossoverRate crossoverRate
    :bCurveDrawingInterval 0.05})
 
