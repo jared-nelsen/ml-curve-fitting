@@ -28,6 +28,7 @@
   {:data (data/generatePointsToFit)
    :population (generateBezierCurvePopulation)
    :populationCount populationCount
+   :indexOfFittestMember -1
    :generation 0
    :bestFitness (Integer/MAX_VALUE)
    :globalBestFitness (Integer/MAX_VALUE)

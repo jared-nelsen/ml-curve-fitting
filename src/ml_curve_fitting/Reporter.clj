@@ -1,19 +1,20 @@
 
 (ns ml-curve-fitting.Reporter)
 
-(defn findBestFitness
-  "Returns the hamming distance value of the most fit member of
-   the given population."
+(defn findFittestPopulationMemberIndex
+  "Returns the index of the fittest member in the population."
   [population]
   (loop [bestFitness (Integer/MAX_VALUE)
+         fittestMemberIndex 0
+         currentIndex 0
          pop population]
     (if (empty? pop)
       bestFitness
       (let [current (first pop)
             currFitness (get current :fitness)]
         (if (< currFitness bestFitness)
-          (recur currFitness (rest pop))
-          (recur bestFitness (rest pop)))))))
+          (recur currFitness currentIndex (inc currentIndex) (rest pop))
+          (recur bestFitness fittestMemberIndex (inc currentIndex) (rest pop)))))))
 
 (defn detectNewGlobalBest
   "Detects if a new global best has been found."
@@ -27,7 +28,8 @@
   [context]
   (let [generation (get context :generation)
         population (get context :population)
-        bestFitness (findBestFitness population)
+        indexOfFittestMember (findFittestPopulationMemberIndex population)
+        bestFitness (get (nth population indexOfFittestMember) :fitness)
         globalBest (detectNewGlobalBest context bestFitness)
         avgFitness 1] ;;temporary
     (do 
@@ -39,4 +41,5 @@
              :generation (inc (get context :generation))
              :bestFitness bestFitness
              :globalBestFitness globalBest
+             :indexOfFittestMember indexOfFittestMember
              :avgFitness avgFitness))))
