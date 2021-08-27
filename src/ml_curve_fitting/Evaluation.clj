@@ -1,4 +1,5 @@
-(ns ml-curve-fitting.Evaluation)
+(ns ml-curve-fitting.Evaluation
+  (:import [java.util.concurrent Executors Executors]))
 
 ;; A Bezier curve is defined by its Control Points. To evaluate the given
 ;; Bezier Curve agaist the given Data we must generate the Y components
@@ -111,31 +112,45 @@
   (assoc bCurve :fitness (evaluateGeneratedBCurvePointsAgainstData bCurve data)))
 
 (defn evaluatePopulation
-  "Evaluates the population found in the given algorithm context with the
-   given evaluation function."
+  "Evaluates the population in the algorithm context."
+  [algorithmContext]
+  (let [population (get algorithmContext :population)
+        data (get-in algorithmContext [:data :points])]
+    (loop [population population
+           newPopulation []]
+      (if (empty? population)
+        newPopulation
+        (let [member (first population)
+              evaluatedMember (evaluateBezierCurve member data)]
+          (recur (rest population)
+                 (conj newPopulation evaluatedMember)))))))
+
+(defn threadedEvaluationFunction
+  "Returns an anonymous function that will be applied by the Executor
+   to the given data."
+  [algorithmContext]
+  (fn [context] (evaluatePopulation context) algorithmContext))
+
+(defn evaluatePopulationMultiThreaded
+  "Evaluates the population in the given algorithm context in parallel."
   [algorithmContext]
   (let [populationCount (get algorithmContext :populationCount)
+        population (get algorithmContext :population)
         dataContainer (get algorithmContext :data)
-        data (get dataContainer :points)]
-    (loop [population (get algorithmContext :population)
-           newPopulation []
-           bestFitness (Integer/MAX_VALUE)
-           fitnessSum 0]
-      (if (empty? population)
-        (let [fitnessAverage (/ fitnessSum populationCount)]
-          (assoc algorithmContext
-                 :population newPopulation
-                 :bestFitness bestFitness
-                 :avgFitness fitnessAverage))
-        (let [member (first population)
-              evaluatedMember (evaluateBezierCurve member data)
-              updatedPopulation (conj newPopulation evaluatedMember)
-              currentMemberFitness (get evaluatedMember :fitness)
-              newBestFitness (min currentMemberFitness bestFitness)]
-          (recur (rest population)
-                 updatedPopulation
-                 newBestFitness
-                 (+ currentMemberFitness fitnessSum)))))))
+        data (get dataContainer :points)
+        ;;-------------------------------------------------------
+        cores (get algorithmContext :evaluationCoreCount)
+        subPopulationSize (/ populationCount cores)
+        subpopulations (partition subPopulationSize population)
+        subAlgorithmContexts (map (fn [pop] (assoc algorithmContext
+                                                   :population
+                                                   pop)) subpopulations)
+        ;;-------------------------------------------------------
+        tasks (map threadedEvaluationFunction subAlgorithmContexts)
+        ]))
+
+;; FInish above and add conditional evaluation to context.
+
 
 (defn evaluate
   "Evaluates the population in the given algorithm context."

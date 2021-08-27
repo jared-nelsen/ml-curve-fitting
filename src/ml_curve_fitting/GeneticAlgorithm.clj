@@ -8,7 +8,10 @@
             [ml-curve-fitting.Evaluation :as evaluate]
             [ml-curve-fitting.Reporter :as reporter]))
 
-(def populationCount 10)
+;; Default cores to evaluate on is total available cores - 2 (126 on my machine)
+(def evaluationCores (- (.availableProcessors (Runtime/getRuntime)) 2))
+
+(def populationCount 10) ;; Must be perfectly divisible by evaluationCores
 (def positionMutationRate 0.8)
 (def addRemoveMutationRate 0.3)
 (def crossoverRate 0.8)
@@ -28,6 +31,7 @@
   {:data (data/generatePointsToFit)
    :population (generateBezierCurvePopulation)
    :populationCount populationCount
+   :evaluationCoreCount evaluationCores
    :indexOfFittestMember -1
    :generation 0
    :bestFitness (Integer/MAX_VALUE)
