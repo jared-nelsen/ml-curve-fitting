@@ -9,7 +9,7 @@
          currentIndex 0
          pop population]
     (if (empty? pop)
-      bestFitness
+      fittestMemberIndex
       (let [current (first pop)
             currFitness (get current :fitness)]
         (if (< currFitness bestFitness)

@@ -10,8 +10,9 @@
 
 ;; Default cores to evaluate on is total available cores - 2 (126 on my machine)
 (def evaluationCores (- (.availableProcessors (Runtime/getRuntime)) 2))
+(def multithreadedEvaluation true)
 
-(def populationCount 10) ;; Must be perfectly divisible by evaluationCores
+(def populationCount 60) ;; Must be perfectly divisible by evaluationCores
 (def positionMutationRate 0.8)
 (def addRemoveMutationRate 0.3)
 (def crossoverRate 0.8)
@@ -32,6 +33,7 @@
    :population (generateBezierCurvePopulation)
    :populationCount populationCount
    :evaluationCoreCount evaluationCores
+   :multithreadedEvaluation multithreadedEvaluation
    :indexOfFittestMember -1
    :generation 0
    :bestFitness (Integer/MAX_VALUE)

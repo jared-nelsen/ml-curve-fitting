@@ -129,15 +129,30 @@
   "Returns an anonymous function that will be applied by the Executor
    to the given data."
   [algorithmContext]
-  (fn [context] (evaluatePopulation context) algorithmContext))
+  (fn [context] (evaluatePopulation context)) algorithmContext)
+
+(defn reassembleSubContexts
+  "Reassemlbes the populations in the given subcontexts into the
+   population of the given main context."
+  ([mainContext subcontexts]
+   (assoc mainContext
+          :population
+          (reassembleSubContexts subcontexts)))
+  ([subcontexts]
+   (loop [subcontexts subcontexts
+          reassembledPopulation []]
+     (if (empty? subcontexts)
+       reassembledPopulation
+       (let [subcontext (first subcontexts)
+             subPop (get subcontext :population)
+             addedToPopulation (into reassembledPopulation subPop)]
+         (recur (rest subcontexts) addedToPopulation))))))
 
 (defn evaluatePopulationMultiThreaded
   "Evaluates the population in the given algorithm context in parallel."
   [algorithmContext]
   (let [populationCount (get algorithmContext :populationCount)
         population (get algorithmContext :population)
-        dataContainer (get algorithmContext :data)
-        data (get dataContainer :points)
         ;;-------------------------------------------------------
         cores (get algorithmContext :evaluationCoreCount)
         subPopulationSize (/ populationCount cores)
@@ -146,13 +161,19 @@
                                                    :population
                                                    pop)) subpopulations)
         ;;-------------------------------------------------------
-        tasks (map threadedEvaluationFunction subAlgorithmContexts)
-        ]))
-
-;; FInish above and add conditional evaluation to context.
-
+        pool (Executors/newFixedThreadPool cores)
+        tasks (map threadedEvaluationFunction subAlgorithmContexts)]
+    (let [ret (.invokeAll pool tasks)]
+      (.shutdown pool)
+      (let [resultantSubcontexts (map #(.get %) ret)]
+        (reassembleSubContexts algorithmContext resultantSubcontexts)))))
 
 (defn evaluate
   "Evaluates the population in the given algorithm context."
   [algorithmContext]
-  (evaluatePopulation algorithmContext))
+  (let [multithreadedEvaluationIndicator (get algorithmContext
+                                              :multithreadedEvaluation)]
+    (if multithreadedEvaluationIndicator
+      (evaluatePopulationMultiThreaded algorithmContext)
+      (let [evaledPop (evaluatePopulation algorithmContext)]
+        (assoc algorithmContext :population evaledPop)))))
