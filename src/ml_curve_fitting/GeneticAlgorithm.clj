@@ -9,14 +9,16 @@
             [ml-curve-fitting.Reporter :as reporter]))
 
 ;; Default cores to evaluate on is total available cores - 2 (126 on my machine)
-(def evaluationCores (- (.availableProcessors (Runtime/getRuntime)) 2))
+;;(def evaluationCores (- (.availableProcessors (Runtime/getRuntime)) 2))
+(def evaluationCores 25)
+
 (def multithreadedEvaluation true)
 
-(def populationCount 60) ;; Must be perfectly divisible by evaluationCores
+(def populationCount 25) ;; Must be perfectly divisible by evaluationCores
 (def positionMutationRate 0.8)
 (def addRemoveMutationRate 0.3)
 (def crossoverRate 0.8)
-(def controlPointCount 9)
+(def controlPointCount 5)
 
 (defn generateBezierCurvePopulation
   []

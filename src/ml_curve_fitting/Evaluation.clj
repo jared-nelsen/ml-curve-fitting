@@ -148,6 +148,17 @@
              addedToPopulation (into reassembledPopulation subPop)]
          (recur (rest subcontexts) addedToPopulation))))))
 
+(defn reassembleSubPopulations
+  "Reassembles the given populations into one population and associates
+   it with the given Algorithm Context."
+  [algorithmContext subPopulations]
+  (loop [mainPopulation []
+         subPopulations subPopulations]
+    (if (empty? subPopulations)
+      (assoc algorithmContext :population mainPopulation)
+      (recur (into mainPopulation (first subPopulations))
+             (rest subPopulations)))))
+
 (defn evaluatePopulationMultiThreaded
   "Evaluates the population in the given algorithm context in parallel."
   [algorithmContext]
@@ -160,13 +171,37 @@
         subAlgorithmContexts (map (fn [pop] (assoc algorithmContext
                                                    :population
                                                    pop)) subpopulations)
+        subAlgorithmContextRefs (map ref subAlgorithmContexts)
         ;;-------------------------------------------------------
         pool (Executors/newFixedThreadPool cores)
-        tasks (map threadedEvaluationFunction subAlgorithmContexts)]
-    (let [ret (.invokeAll pool tasks)]
-      (.shutdown pool)
-      (let [resultantSubcontexts (map #(.get %) ret)]
-        (reassembleSubContexts algorithmContext resultantSubcontexts)))))
+        tasks (map threadedEvaluationFunction subAlgorithmContextRefs)]
+    (doseq [future (.invokeAll pool tasks)]
+      (.get future))
+    (.shutdown pool)
+    (let [resultantSubcontexts (map deref subAlgorithmContextRefs)]
+        (reassembleSubContexts algorithmContext resultantSubcontexts))))
+
+(defn evaluatePopulationSingleThreaded
+  "Evaluates the population of the given Algorithm Context on a single thread."
+  [algorithmContext]
+  (let [evaledPop (evaluatePopulation algorithmContext)]
+        (assoc algorithmContext :population evaledPop)))
+
+(defn evaluatePopulationMultiThreaded2
+  "Uses pmap to paralellize the evaluation of the full population
+   found in the given algorithm context."
+  [algorithmContext]
+  (let [populationCount (get algorithmContext :populationCount)
+        population (get algorithmContext :population)
+        ;;-------------------------------------------------------
+        cores (get algorithmContext :evaluationCoreCount)
+        subPopulationSize (/ populationCount cores)
+        subpopulations (partition subPopulationSize population)
+        subAlgorithmContexts (map (fn [pop] (merge {}
+                                                   algorithmContext
+                                                   {:population pop})) subpopulations)
+        evaluatedSubpopulations (pmap evaluatePopulation subAlgorithmContexts)]
+    (reassembleSubPopulations algorithmContext evaluatedSubpopulations)))
 
 (defn evaluate
   "Evaluates the population in the given algorithm context."
@@ -174,6 +209,5 @@
   (let [multithreadedEvaluationIndicator (get algorithmContext
                                               :multithreadedEvaluation)]
     (if multithreadedEvaluationIndicator
-      (evaluatePopulationMultiThreaded algorithmContext)
-      (let [evaledPop (evaluatePopulation algorithmContext)]
-        (assoc algorithmContext :population evaledPop)))))
+      (evaluatePopulationMultiThreaded2 algorithmContext)
+      (evaluatePopulationSingleThreaded algorithmContext))))
