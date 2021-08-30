@@ -9,9 +9,9 @@
             [ml-curve-fitting.Reporter :as reporter]))
 
 (def coreCount (- (.availableProcessors (Runtime/getRuntime)) 2))
-(def acPopMultiplicationFactor 1) ;; How many times the coreCount sized population should be multiplied
+(def acPopMultiplicationFactor 10) ;; How many times the coreCount sized population should be multiplied
 (def acPopulationSize (* coreCount acPopMultiplicationFactor))
-(def subPopulationCount 25) ;;The count of population members for each core
+(def subPopulationCount 50) ;;The count of population members for each core
 
 
 (def populationCount 25)
