@@ -19,8 +19,8 @@
 (def addRemoveMutationRate 0.3)
 (def crossoverRate 0.8)
 
-(def controlPointCount 5)
-(def pointsToFitCount 5)
+(def controlPointCount 50)
+(def pointsToFitCount 50)
 
 (defn generateBezierCurvePopulation
   "Generates a population of Bezier Curves."

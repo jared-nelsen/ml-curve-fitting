@@ -34,10 +34,10 @@
   "Calculates the A component of C."
   [coeff n k]
   (loop [coeff coeff
-         x (- n (+ k 1))]
+         x (-' n (+' k 1))]
     (if (> x n)
       coeff
-      (recur (* coeff x)
+      (recur (*' coeff x)
              (inc x)))))
 
 (defn C
