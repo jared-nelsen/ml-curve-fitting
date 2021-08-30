@@ -24,22 +24,55 @@
       newBestFitness
       currentGlobalBest)))
 
-(defn report
+(defn findFittestAlgorithmContext
+  "Finds and returns the fittest Algorithm Context in the given population."
+  [acPop]
+  (loop [fittestContext (first acPop)
+         acPop acPop]
+    (if (empty? acPop)
+      fittestContext
+      (let [currentAc (first acPop)
+            currentBestFitness (:bestFitness currentAc)
+            fittestDetectedFitness (:bestFitness fittestContext)]
+        (if (< currentBestFitness fittestDetectedFitness)
+          (recur currentAc (rest acPop))
+          (recur fittestContext (rest acPop)))))))
+
+(defn calculateStats
+  "Calculates some key statistics about the state of the Algorithm."
   [context]
   (let [generation (get context :generation)
         population (get context :population)
         indexOfFittestMember (findFittestPopulationMemberIndex population)
         bestFitness (get (nth population indexOfFittestMember) :fitness)
-        globalBest (detectNewGlobalBest context bestFitness)
-        avgFitness 1] ;;temporary
-    (do 
-      (println (str "Generation: " generation
-                    ", Best Fitness: " bestFitness
-                    ", Avg Fitness: " avgFitness
-                    ", Global Best: " globalBest))
-      (assoc context
-             :generation (inc (get context :generation))
+        globalBest (detectNewGlobalBest context bestFitness)]
+    (assoc context
+             :generation (inc generation)
              :bestFitness bestFitness
              :globalBestFitness globalBest
-             :indexOfFittestMember indexOfFittestMember
-             :avgFitness avgFitness))))
+             :indexOfFittestMember indexOfFittestMember)))
+
+(defn report
+  "Reports on the progress of the Genetic Algorithm."
+  [context]
+  (let [context (calculateStats context)
+        generation (:generation context)
+        bestFitness (:bestFitness context)
+        globalBestFitness (:globalBestFitness context)]
+    (do (println (str "Generation: " generation
+                      ", Best Fitness: " bestFitness
+                      ", Global Best Fitness: " globalBestFitness))
+        context)))
+
+(defn reportP
+  "Reports on the progress of the Genetic Algorithm in parallel mode."
+  [contexts]
+  (let [contexts (pmap calculateStats contexts)
+        fittestContext (findFittestAlgorithmContext contexts)
+        generation (:generation fittestContext)
+        bestFitness (:bestFitness fittestContext)
+        globalBestFitness (:globalBestFitness fittestContext)]
+    (do (println (str "P- Generation: " generation
+                      ", Best Fitness: " bestFitness
+                      ", Global Best Fitness: " globalBestFitness))
+        contexts)))

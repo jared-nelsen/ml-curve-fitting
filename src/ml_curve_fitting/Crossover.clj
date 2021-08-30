@@ -87,3 +87,8 @@
                                                   member2)]
         (recur (rest (rest population))
                (conj newPopulation newMember))))))
+
+(defn crossoverP
+  "Performs Crossover for each of the Algorithm Contexts in the given population."
+  [acPop]
+  (pmap crossover acPop))

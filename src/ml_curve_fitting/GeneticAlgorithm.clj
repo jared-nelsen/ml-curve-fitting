@@ -8,29 +8,47 @@
             [ml-curve-fitting.Evaluation :as evaluate]
             [ml-curve-fitting.Reporter :as reporter]))
 
-(def multithreadedEvaluation true)
+(def coreCount (- (.availableProcessors (Runtime/getRuntime)) 2))
+(def acPopMultiplicationFactor 1) ;; How many times the coreCount sized population should be multiplied
+(def acPopulationSize (* coreCount acPopMultiplicationFactor))
+(def subPopulationCount 25) ;;The count of population members for each core
 
-(def populationCount 2000) ;; Must be perfectly divisible by evaluationCores
+
+(def populationCount 25)
 (def positionMutationRate 0.8)
 (def addRemoveMutationRate 0.3)
 (def crossoverRate 0.8)
+
 (def controlPointCount 5)
+(def pointsToFitCount 5)
 
 (defn generateBezierCurvePopulation
-  []
-  (loop [remaining populationCount
+  "Generates a population of Bezier Curves."
+  [memberCount]
+  (loop [remaining memberCount
          population []]
     (if (= 0 remaining)
       population
       (recur (dec remaining) (conj population
                                    (bCurve/randomBezierCurve controlPointCount))))))
 
+(defn generateNAlgorithmContexts
+  "Generates N Algorithm Contexts for parallel evaluation. Passes in how many
+   members the population in each Algorithm Context should contain."
+  [acPopCount subPopCount data]
+  (loop [acPopCount acPopCount
+         contexts []]
+    (if (= 0 acPopCount)
+      contexts
+      (let [newMember (generateAlgorithmContext subPopCount data)]
+        (recur (dec acPopCount) (conj contexts newMember))))))
+
 (defn generateAlgorithmContext
-  []
-  {:data (data/generatePointsToFit)
-   :population (generateBezierCurvePopulation)
+  "Generates the Algorithm Context."
+  [populationCount data]
+  {:data data
+   :population (generateBezierCurvePopulation populationCount)
    :populationCount populationCount
-   :multithreadedEvaluation multithreadedEvaluation
    :indexOfFittestMember -1
    :generation 0
    :bestFitness (Integer/MAX_VALUE)
@@ -42,16 +60,35 @@
    :bCurveDrawingInterval 0.05})
 
 (defn evolve
-  "Performs the Genetic Algorithm on the generated algorithm context."
+  "Performs the Genetic Algorithm on the generated Algorithm Context."
   []
-  (loop [generations 99999999
-         algorithmContext (generateAlgorithmContext)]
-    (if (= 0 generations)
-      (System/exit 0)
-      (recur (dec generations)
-             (-> algorithmContext
-                 select/selectMembers
-                 crossover/crossover
-                 mutate/mutate
-                 evaluate/evaluate
-                 reporter/report)))))
+  (let [data (data/generatePointsToFit pointsToFitCount)]
+    (loop [generations 99999999
+           algorithmContext (generateAlgorithmContext populationCount data)]
+      (if (= 0 generations)
+        (System/exit 0)
+        (recur (dec generations)
+               (-> algorithmContext
+                   select/selectMembers
+                   crossover/crossover
+                   mutate/mutate
+                   evaluate/evaluate
+                   reporter/report))))))
+
+(defn evolveP
+  "Performs the Genetic Algorithm on the generated population of Algorithm Contexts."
+  []
+  (let [data (data/generatePointsToFit pointsToFitCount)]
+    (loop [generations 99999999
+           contexts (generateNAlgorithmContexts acPopulationSize
+                                                subPopulationCount
+                                                data)]
+      (if (= 0 generations)
+        (System/exit 0)
+        (recur (dec generations)
+               (-> contexts
+                   select/selectMembersP
+                   crossover/crossoverP
+                   mutate/mutateP
+                   evaluate/evaluateP
+                   reporter/reportP))))))

@@ -65,8 +65,8 @@
    member n + 1 in the Crossover routine. Tournament
    pool size is determined as 2/10ths of the population."
   [algorithmContext]
-  (let [populationCount (get algorithmContext :populationCount)
-        population (get algorithmContext :population)
+  (let [population (get algorithmContext :population)
+        populationCount (count population)
         tournamentSize (int (* populationCount 0.2))]
     (loop [newPopulation []
            remainingSelects populationCount]
@@ -76,3 +76,8 @@
                                              tournamentSize)]
           (recur (into newPopulation selectedParents)
                  (dec remainingSelects)))))))
+
+(defn selectMembersP
+  "Performs Selection on each Algorithm Context in the given population in parallel."
+  [acPop]
+  (pmap selectMembers acPop))

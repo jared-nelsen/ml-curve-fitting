@@ -6,7 +6,6 @@
 
 (def pointMinY -1.0)
 (def pointMaxY 1.0)
-(def defaultPointsToFit 5)
 
 (defrecord Point [x y])
 
@@ -28,5 +27,5 @@
 (defrecord PointsToFit [points])
 
 (defn generatePointsToFit
-  []
-  (PointsToFit. (generateVectorOfRandomPoints defaultPointsToFit)))
+  [count]
+  (PointsToFit. (generateVectorOfRandomPoints count)))

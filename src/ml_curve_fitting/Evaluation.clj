@@ -125,89 +125,24 @@
           (recur (rest population)
                  (conj newPopulation evaluatedMember)))))))
 
-(defn threadedEvaluationFunction
-  "Returns an anonymous function that will be applied by the Executor
-   to the given data."
-  [algorithmContext]
-  (fn [context] (evaluatePopulation context)) algorithmContext)
-
-(defn reassembleSubContexts
-  "Reassemlbes the populations in the given subcontexts into the
-   population of the given main context."
-  ([mainContext subcontexts]
-   (assoc mainContext
-          :population
-          (reassembleSubContexts subcontexts)))
-  ([subcontexts]
-   (loop [subcontexts subcontexts
-          reassembledPopulation []]
-     (if (empty? subcontexts)
-       reassembledPopulation
-       (let [subcontext (first subcontexts)
-             subPop (get subcontext :population)
-             addedToPopulation (into reassembledPopulation subPop)]
-         (recur (rest subcontexts) addedToPopulation))))))
-
-(defn reassembleSubPopulations
-  "Reassembles the given populations into one population and associates
-   it with the given Algorithm Context."
-  [algorithmContext subPopulations]
-  (loop [mainPopulation []
-         subPopulations subPopulations]
-    (if (empty? subPopulations)
-      (assoc algorithmContext :population mainPopulation)
-      (recur (into mainPopulation (first subPopulations))
-             (rest subPopulations)))))
-
-(defn evaluatePopulationMultiThreaded
-  "Evaluates the population in the given algorithm context in parallel."
-  [algorithmContext]
-  (let [populationCount (get algorithmContext :populationCount)
-        population (get algorithmContext :population)
-        ;;-------------------------------------------------------
-        cores (get algorithmContext :evaluationCoreCount)
-        subPopulationSize (/ populationCount cores)
-        subpopulations (partition subPopulationSize population)
-        subAlgorithmContexts (map (fn [pop] (assoc algorithmContext
-                                                   :population
-                                                   pop)) subpopulations)
-        subAlgorithmContextRefs (map ref subAlgorithmContexts)
-        ;;-------------------------------------------------------
-        pool (Executors/newFixedThreadPool cores)
-        tasks (map threadedEvaluationFunction subAlgorithmContextRefs)]
-    (doseq [future (.invokeAll pool tasks)]
-      (.get future))
-    (.shutdown pool)
-    (let [resultantSubcontexts (map deref subAlgorithmContextRefs)]
-        (reassembleSubContexts algorithmContext resultantSubcontexts))))
-
 (defn evaluatePopulationSingleThreaded
   "Evaluates the population of the given Algorithm Context on a single thread."
   [algorithmContext]
   (let [evaledPop (evaluatePopulation algorithmContext)]
         (assoc algorithmContext :population evaledPop)))
 
-(defn evaluatePopulationMultiThreaded2
-  "Uses pmap to paralellize the evaluation of the full population
-   found in the given algorithm context."
-  [algorithmContext]
-  (let [populationCount (get algorithmContext :populationCount)
-        population (get algorithmContext :population)
-        ;;-------------------------------------------------------
-        cores (get algorithmContext :evaluationCoreCount)
-        subPopulationSize (/ populationCount cores)
-        subpopulations (partition subPopulationSize population)
-        subAlgorithmContexts (map (fn [pop] (merge {}
-                                                   algorithmContext
-                                                   {:population pop})) subpopulations)
-        evaluatedSubpopulations (pmap evaluatePopulation subAlgorithmContexts)]
-    (reassembleSubPopulations algorithmContext evaluatedSubpopulations)))
-
 (defn evaluate
   "Evaluates the population in the given algorithm context."
   [algorithmContext]
-  (let [multithreadedEvaluationIndicator (get algorithmContext
-                                              :multithreadedEvaluation)]
-    (if multithreadedEvaluationIndicator
-      (evaluatePopulationMultiThreaded2 algorithmContext)
-      (evaluatePopulationSingleThreaded algorithmContext))))
+  (evaluatePopulationSingleThreaded algorithmContext))
+
+(defn evaluatePopulationMultiThreaded
+  "Evaluates the given population of Algorithm Contexts."
+  [acPop]
+  (pmap evaluatePopulationSingleThreaded acPop))
+
+(defn evaluateP
+  "Evaluates the given population of Algorithm Contexts."
+  [acPop]
+  (evaluatePopulationMultiThreaded acPop))
+

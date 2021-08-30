@@ -115,3 +115,8 @@
         (let [popMember (first pop)
               mutatedPopMember (mutateBezierCurve popMember context)]
           (recur (rest pop) (conj newPop mutatedPopMember)))))))
+
+(defn mutateP
+  "Performs Mutation on each Algorithm Context in the given population in parallel."
+  [acPop]
+  (pmap mutate acPop))
