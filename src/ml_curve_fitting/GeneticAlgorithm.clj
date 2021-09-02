@@ -32,17 +32,6 @@
       (recur (dec remaining) (conj population
                                    (bCurve/randomBezierCurve controlPointCount))))))
 
-(defn generateNAlgorithmContexts
-  "Generates N Algorithm Contexts for parallel evaluation. Passes in how many
-   members the population in each Algorithm Context should contain."
-  [acPopCount subPopCount data]
-  (loop [acPopCount acPopCount
-         contexts []]
-    (if (= 0 acPopCount)
-      contexts
-      (let [newMember (generateAlgorithmContext subPopCount data)]
-        (recur (dec acPopCount) (conj contexts newMember))))))
-
 (defn generateAlgorithmContext
   "Generates the Algorithm Context."
   [populationCount data]
@@ -58,6 +47,18 @@
    :addRemoveMutationRate addRemoveMutationRate
    :crossoverRate crossoverRate
    :bCurveDrawingInterval 0.05})
+
+(defn generateNAlgorithmContexts
+  "Generates N Algorithm Contexts for parallel evaluation. Passes in how many
+   members the population in each Algorithm Context should contain."
+  [acPopCount subPopCount data]
+  (loop [acPopCount acPopCount
+         contexts []]
+    (if (= 0 acPopCount)
+      contexts
+      (let [newMember (generateAlgorithmContext subPopCount data)]
+        (recur (dec acPopCount) (conj contexts newMember))))))
+
 
 (defn evolve
   "Performs the Genetic Algorithm on the generated Algorithm Context."
