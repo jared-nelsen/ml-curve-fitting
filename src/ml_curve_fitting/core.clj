@@ -5,4 +5,4 @@
 (defn -main
   "Starts the Genetic Algorithm."
   [& args]
-  (GA/evolve))
+  (GA/evolveP))
