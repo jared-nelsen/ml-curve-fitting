@@ -6,7 +6,8 @@
             [ml-curve-fitting.Crossover :as crossover]
             [ml-curve-fitting.Mutate :as mutate]
             [ml-curve-fitting.Evaluation :as evaluate]
-            [ml-curve-fitting.Reporter :as reporter]))
+            [ml-curve-fitting.Reporter :as reporter]
+            [ml-curve-fitting.Animation :as animation]))
 
 (def coreCount (- (.availableProcessors (Runtime/getRuntime)) 2))
 (def acPopMultiplicationFactor 1) ;; How many times the coreCount sized population should be multiplied
@@ -14,7 +15,7 @@
 (def subPopulationCount 30) ;;The count of population members for each core
 
 
-(def populationCount 25)
+(def populationCount 1)
 (def positionMutationRate 0.8)
 (def addRemoveMutationRate 0.2)
 (def crossoverRate 0.9)
@@ -38,7 +39,7 @@
   {:data data
    :population (generateBezierCurvePopulation populationCount)
    :populationCount populationCount
-   :indexOfFittestMember -1
+   :indexOfFittestMember 0
    :generation 0
    :bestFitness (Integer/MAX_VALUE)
    :globalBestFitness (Integer/MAX_VALUE)
@@ -92,4 +93,5 @@
                    crossover/crossoverP
                    mutate/mutateP
                    evaluate/evaluateP
-                   reporter/reportP))))))
+                   reporter/reportP
+                   animation/updateP))))))
