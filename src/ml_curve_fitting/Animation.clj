@@ -5,7 +5,7 @@
 
 ;; Currently only supports animation for parallel evolution
 
-(def curveDrawingPointInterval 0.01)
+(def curveDrawingPointInterval 0.1)
 
 (defn getFittestBCurveInAlgorithmContext
   "Gets the fittest B Curve out of the given Algorithm Context."
@@ -14,7 +14,6 @@
         fittestIndex (get context :indexOfFittestMember)]
     (get population fittestIndex)))
 
-THIS FUNCTION IS INFINITE LOOPING? Rest doesnt seem to be working
 (defn getFittestBCurveInPopulationOfAlgorithmContexts
   "Retrieves the fittest B Curve within the given population of
    algorithm contexts."
@@ -42,7 +41,8 @@ THIS FUNCTION IS INFINITE LOOPING? Rest doesnt seem to be working
 
 (defn updateP
   [algorithmContexts]
-  (let [dataToFit (get (first algorithmContexts) :data) ;;Constant across contexts
+  (let [x (count algorithmContexts)
+        dataToFit (get (first algorithmContexts) :data) ;;Constant across contexts
         fittestCurve (getFittestBCurveInPopulationOfAlgorithmContexts algorithmContexts)
         controlPoints (get fittestCurve :controlPointVector)
         bCurvePointVector (evaluation/generateBCurvePointsOnInterval controlPoints
