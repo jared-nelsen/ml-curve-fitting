@@ -87,10 +87,17 @@
       (let [newPoint (generatePointOnBezierCurve controlPoints x)]
         (recur (- x interval) (conj generatedPoints newPoint))))))
 
+(defn generateBCurvePointsOnIntervalP
+  "Generates points along the given Bezier Curve at the given interval
+   in parallel. 1 is perfectly divisible by the interval."
+  [controlPoints interval]
+  (let [r (vec (range 0.0 1.0 interval))]
+    (pmap #(generatePointOnBezierCurve controlPoints %) r)))
+
 (defn evaluateGeneratedBCurvePointsAgainstData
   "Calculates the sum of the absolute values of the differences between
    the Y coordinates for each X of each Data Point in the Data to fit."
-  [bCurve data]
+  [bCurve data]q
   (loop [controlPoints (get bCurve :controlPointVector)
          generatedPoints (generateCorrespondingPointsOnBCurveGivenControlPoints controlPoints
                                                                                 data)

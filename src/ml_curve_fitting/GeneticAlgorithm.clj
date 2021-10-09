@@ -12,7 +12,7 @@
 (def coreCount (- (.availableProcessors (Runtime/getRuntime)) 2))
 (def acPopMultiplicationFactor 1) ;; How many times the coreCount sized population should be multiplied
 (def acPopulationSize (* coreCount acPopMultiplicationFactor))
-(def subPopulationCount 2) ;;The count of population members for each core
+(def subPopulationCount 20) ;;The count of population members for each core
 
 
 (def populationCount 1)

@@ -36,7 +36,7 @@
 
 (def animationContent
   (atom {:pointsToFit [{:x 1 :y 1}]
-         :controlPointVector []
+         :controlPointVector (:controlPointVector (ml-curve-fitting.BezierCurve/randomBezierCurve 10))
          :bCurvePointVector []}))
 
 (defn updateP
@@ -45,12 +45,15 @@
         dataToFit (get (first algorithmContexts) :data) ;;Constant across contexts
         fittestCurve (getFittestBCurveInPopulationOfAlgorithmContexts algorithmContexts)
         controlPoints (get fittestCurve :controlPointVector)
-        bCurvePointVector (evaluation/generateBCurvePointsOnInterval controlPoints
+        bCurvePointVector (evaluation/generateBCurvePointsOnIntervalP controlPoints
                                                                      curveDrawingPointInterval)
         newAnimationData {:pointsToFit (:points dataToFit)
                           :controlPointVector controlPoints
                           :bCurvePointVector bCurvePointVector}]
-    (do (swap! animationContent newAnimationData)
+    (do (swap! animationContent assoc
+               :pointsToFit (:pointsToFit newAnimationData)
+               :controlPointVector (:controlPointVector newAnimationData)
+               :bCurvePointVector (:bCurvePointVector newAnimationData))
         algorithmContexts)))
 
 ;; Drawing
@@ -74,6 +77,18 @@
       (if (empty? pointsToFit)
         nil
         (recur (rest pointsToFit))))))
+
+(defn drawPointsToFit
+  "Draws the data that is being fit with the algorithm."
+  []
+  (loop [pointsToFit (get @animationContent :pointsToFit)]
+    (if (not-empty pointsToFit)
+      (let [point (scalePoint (first pointsToFit))
+            x (:x point)
+            y (:y point)]
+        (q/ellipse x y 10 10)
+        (recur (rest pointsToFit)))
+      nil)))
 
 (defn drawControlPointVector
   "Draws the control point vector."
