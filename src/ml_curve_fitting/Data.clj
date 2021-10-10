@@ -4,8 +4,9 @@
   [low high]
   (+ low (* (rand) ( - high low))))
 
-(def pointMinY -1.0)
-(def pointMaxY 1.0)
+(def pointMinY -150.0)
+(def pointMaxY 150.0)
+(def xInterval 75)
 
 (defrecord Point [x y])
 
@@ -17,12 +18,12 @@
   [length]
   (loop [vectorOfPoints []
          remainingPoints length
-         xIndex 1]
+         xIndex 0]
     (if (= 0 remainingPoints)
       vectorOfPoints
       (recur (conj vectorOfPoints (generateRandomPoint xIndex))
              (dec remainingPoints)
-             (inc xIndex)))))
+             (+ xIndex xInterval)))))
 
 (defrecord PointsToFit [points])
 

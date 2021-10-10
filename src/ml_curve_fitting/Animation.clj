@@ -35,8 +35,8 @@
                  bestFitness))))))
 
 (def animationContent
-  (atom {:pointsToFit [{:x 1 :y 1}]
-         :controlPointVector (:controlPointVector (ml-curve-fitting.BezierCurve/randomBezierCurve 10))
+  (atom {:pointsToFit []
+         :controlPointVector []
          :bCurvePointVector []}))
 
 (defn updateP
@@ -46,37 +46,22 @@
         fittestCurve (getFittestBCurveInPopulationOfAlgorithmContexts algorithmContexts)
         controlPoints (get fittestCurve :controlPointVector)
         bCurvePointVector (evaluation/generateBCurvePointsOnIntervalP controlPoints
-                                                                     curveDrawingPointInterval)
-        newAnimationData {:pointsToFit (:points dataToFit)
-                          :controlPointVector controlPoints
-                          :bCurvePointVector bCurvePointVector}]
+                                                                     curveDrawingPointInterval)]
     (do (swap! animationContent assoc
-               :pointsToFit (:pointsToFit newAnimationData)
-               :controlPointVector (:controlPointVector newAnimationData)
-               :bCurvePointVector (:bCurvePointVector newAnimationData))
+               :pointsToFit (:points dataToFit)
+               :controlPointVector controlPoints
+               :bCurvePointVector (:bCurvePointVector bCurvePointVector))
         algorithmContexts)))
 
 ;; Drawing
 (def windowSizeXY 1000)
-(def xyScaleFactor 0.2) ;; % of window size
+(def xyScaleFactor 0.5) ;; % of window size
 (defn scalePoint
   [point]
   (let [scalePx (int (* windowSizeXY xyScaleFactor))
         x (+ (:x point) scalePx)
         y (+ (:y point) scalePx)]
     (assoc point :x x :y y)))
-
-(defn drawPointsToFit
-  "Draws the data that is being fit with the Algorithm."
-  []
-  (loop [pointsToFit (get @animationContent :pointsToFit)]
-    (let [point (scalePoint (first pointsToFit))
-          x (:x point)
-          y (:y point)]
-      (q/ellipse x y 10 10)
-      (if (empty? pointsToFit)
-        nil
-        (recur (rest pointsToFit))))))
 
 (defn drawPointsToFit
   "Draws the data that is being fit with the algorithm."
@@ -86,6 +71,7 @@
       (let [point (scalePoint (first pointsToFit))
             x (:x point)
             y (:y point)]
+        (q/fill 0 120 255)
         (q/ellipse x y 10 10)
         (recur (rest pointsToFit)))
       nil)))
@@ -93,16 +79,32 @@
 (defn drawControlPointVector
   "Draws the control point vector."
   []
-  nil)
+  (loop [controlPointVector (get @animationContent :controlPointVector)]
+    (if (not-empty controlPointVector)
+      (let [point (scalePoint (first controlPointVector))
+            x (:x point)
+            y (:y point)]
+        (q/fill 0 204 0)
+        (q/ellipse x y 10 10)
+        (recur (rest controlPointVector)))
+      nil)))
 
 (defn drawBCurve
   "Draws the actual generated B Curve."
   []
   nil)
 
+(defn resetBackground
+  "Resets the background of the sketch by drawing a new sqare over it."
+  []
+  (q/fill 0 0 0)
+  (q/rect 0 0 windowSizeXY windowSizeXY))
+
 (defn draw
   []
-  (drawPointsToFit))
+  (q/background 255)
+  (drawPointsToFit)
+  (drawControlPointVector))
   
 (q/defsketch bCurveAnimation
   :title "Test"

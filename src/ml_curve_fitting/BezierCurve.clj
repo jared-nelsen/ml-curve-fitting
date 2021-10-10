@@ -1,8 +1,9 @@
 
 (ns ml-curve-fitting.BezierCurve)
 
-(def defaultYMin -1.0)
-(def defaultYMax 1.0)
+(def defaultYMin -150.0)
+(def defaultYMax 150.0)
+(def xInterval 75)
 
 (defn randomDoubleInARange
   [low high]
@@ -18,7 +19,7 @@
     (if (empty? controlPointVector)
       updatedControlPointVector
       (let [currentControlPoint (first controlPointVector)
-            updatedControlPoint (assoc currentControlPoint :x currentIndex)]
+            updatedControlPoint (assoc currentControlPoint :x (* currentIndex xInterval))]
         (recur (inc currentIndex)
                (conj updatedControlPointVector updatedControlPoint)
                (rest controlPointVector))))))
@@ -33,12 +34,12 @@
   [count]
   (loop [controlPoints []
          currentCount count
-         x 1]
+         x 0]
     (if (= 0 currentCount)
       controlPoints
       (recur (conj controlPoints (randomControlPoint x))
              (dec currentCount)
-             (inc x)))))
+             (+ x xInterval)))))
 
 (defrecord BezierCurve [controlPointVector fitness])
 
