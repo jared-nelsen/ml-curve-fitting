@@ -10,17 +10,17 @@
             [ml-curve-fitting.Animation :as animation]))
 
 (def coreCount (- (.availableProcessors (Runtime/getRuntime)) 2))
-(def acPopMultiplicationFactor 5) ;; How many times the coreCount sized population should be multiplied
+(def acPopMultiplicationFactor 10) ;; How many times the coreCount sized population should be multiplied
 (def acPopulationSize (* coreCount acPopMultiplicationFactor))
-(def subPopulationCount 20) ;;The count of population members for each core
+(def subPopulationCount 50) ;;The count of population members for each core
 
 
 (def populationCount 100)
-(def positionMutationRate 0.8)
-(def addRemoveMutationRate 0.2)
-(def crossoverRate 0.9)
+(def positionMutationRate 0.3)
+(def addRemoveMutationRate 0.0)
+(def crossoverRate 0.5)
 
-(def controlPointCount 10)
+(def controlPointCount 7)
 (def pointsToFitCount 5)
 
 (defn generateBezierCurvePopulation
