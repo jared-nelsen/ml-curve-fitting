@@ -52,7 +52,7 @@
     (loop [x 0
            y 0
            i n]
-      (if (= -1 i) ;;-1 or 0??
+      (if (= 0 i) ;;-1 or 0??
         (Point. x y)
         (let [controlPoint (nth controlPoints i)
               c (C n i)
@@ -80,7 +80,7 @@
   "Generates points along the given Bezier Curve at the given interval
    in parallel. 1 is perfectly divisible by the interval."
   [controlPoints interval]
-  (let [r (vec (range 0.0 1.0 interval))]
+  (let [r (vec (range -1.0 1.0 interval))]
     (pmap #(generatePointOnBezierCurve controlPoints %) r)))
 
 (defn evaluateGeneratedBCurvePointsAgainstData

@@ -4,10 +4,10 @@
   [low high]
   (+ low (* (rand) ( - high low))))
 
-(def pointMinY -150.0)
-(def pointMaxY 150.0)
-(def pointMinX -150.0)
-(def pointMaxX 150.0)
+(def pointMinY 0.0)
+(def pointMaxY 1.0)
+(def pointMinX 0.0)
+(def pointMaxX 1.0)
 
 (defrecord Point [x y])
 

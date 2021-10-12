@@ -1,10 +1,10 @@
 
 (ns ml-curve-fitting.BezierCurve)
 
-(def defaultYMin -150.0)
-(def defaultYMax 150.0)
-(def defaultXMin -150.0)
-(def defaultXMax 150.0)
+(def defaultYMin 0.0)
+(def defaultYMax 1.0)
+(def defaultXMin 0.0)
+(def defaultXMax 1.0)
 
 (defn randomDoubleInARange
   [low high]

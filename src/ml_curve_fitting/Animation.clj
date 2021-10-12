@@ -55,13 +55,18 @@
 
 ;; Drawing
 (def windowSizeXY 1000)
+(def explosionFactor 150)
 (def xyScaleFactor 0.5) ;; % of window size
 (defn scalePoint
   [point]
   (let [scalePx (int (* windowSizeXY xyScaleFactor))
-        x (+ (:x point) scalePx)
-        y (+ (:y point) scalePx)]
-    (assoc point :x x :y y)))
+        x (:x point)
+        y (:y point)
+        xx (* x explosionFactor)
+        yy (* y explosionFactor)
+        xp (+ x xx scalePx)
+        yp (+ y yy scalePx)]
+    (assoc point :x xp :y yp)))
 
 (defn drawPointsToFit
   "Draws the data that is being fit with the algorithm."

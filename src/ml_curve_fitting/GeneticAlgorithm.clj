@@ -16,11 +16,11 @@
 
 
 (def populationCount 100)
-(def positionMutationRate 0.3)
-(def addRemoveMutationRate 0.0)
-(def crossoverRate 0.5)
+(def positionMutationRate 0.8)
+(def addRemoveMutationRate 0.3)
+(def crossoverRate 0.7)
 
-(def controlPointCount 7)
+(def controlPointCount 6)
 (def pointsToFitCount 5)
 
 (defn generateBezierCurvePopulation

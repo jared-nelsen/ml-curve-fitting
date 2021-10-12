@@ -2,8 +2,8 @@
 (ns ml-curve-fitting.Mutate
   (:require [ml-curve-fitting.BezierCurve :as bCurve]))
 
-(def valueBumpLow -0.001)
-(def valueBumpHigh 0.001)
+(def valueBumpLow -0.0001)
+(def valueBumpHigh 0.0001)
 
 (defn randomDoubleInARange
   [low high]
@@ -37,7 +37,10 @@
   ([bezierCurve]
    (let [controlPointVector (get bezierCurve :controlPointVector)
          ;; Give the new Control Point an invalid X index. X indeces will be rectified in the next few steps
-         newRandomControlPoint (bCurve/->ControlPoint -1 (bCurve/randomDoubleInARange bCurve/defaultYMin
+         newRandomControlPoint (bCurve/->ControlPoint -1
+                                                      (bCurve/randomDoubleInARange bCurve/defaultXMin
+                                                                                   bCurve/defaultXMax)
+                                                      (bCurve/randomDoubleInARange bCurve/defaultYMin
                                                                                       bCurve/defaultYMax))
          addIndex (rand-int (count controlPointVector))
          updatedControlPointVector (addItemToVectorAtIndex controlPointVector
