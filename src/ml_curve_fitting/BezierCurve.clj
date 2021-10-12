@@ -3,7 +3,6 @@
 
 (def defaultYMin -150.0)
 (def defaultYMax 150.0)
-(def xInterval 75)
 
 (defn randomDoubleInARange
   [low high]
@@ -13,13 +12,13 @@
   "Sets the X indeces in each Control Point in the given Control Point vector to its own position
    in the given vector."
   [controlPointVector]
-  (loop [currentIndex 1
+  (loop [currentIndex 0
          updatedControlPointVector []
          controlPointVector controlPointVector]
     (if (empty? controlPointVector)
       updatedControlPointVector
       (let [currentControlPoint (first controlPointVector)
-            updatedControlPoint (assoc currentControlPoint :x (* currentIndex xInterval))]
+            updatedControlPoint (assoc currentControlPoint :x (inc currentIndex))]
         (recur (inc currentIndex)
                (conj updatedControlPointVector updatedControlPoint)
                (rest controlPointVector))))))
@@ -39,7 +38,7 @@
       controlPoints
       (recur (conj controlPoints (randomControlPoint x))
              (dec currentCount)
-             (+ x xInterval)))))
+             (inc x)))))
 
 (defrecord BezierCurve [controlPointVector fitness])
 

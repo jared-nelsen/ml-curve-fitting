@@ -5,7 +5,7 @@
 
 ;; Currently only supports animation for parallel evolution
 
-(def curveDrawingPointInterval 0.1)
+(def curveDrawingPointInterval 0.01)
 
 (defn getFittestBCurveInAlgorithmContext
   "Gets the fittest B Curve out of the given Algorithm Context."
@@ -46,11 +46,11 @@
         fittestCurve (getFittestBCurveInPopulationOfAlgorithmContexts algorithmContexts)
         controlPoints (get fittestCurve :controlPointVector)
         bCurvePointVector (evaluation/generateBCurvePointsOnIntervalP controlPoints
-                                                                     curveDrawingPointInterval)]
+                                                                      curveDrawingPointInterval)]
     (do (swap! animationContent assoc
                :pointsToFit (:points dataToFit)
                :controlPointVector controlPoints
-               :bCurvePointVector (:bCurvePointVector bCurvePointVector))
+               :bCurvePointVector bCurvePointVector)
         algorithmContexts)))
 
 ;; Drawing
@@ -92,19 +92,25 @@
 (defn drawBCurve
   "Draws the actual generated B Curve."
   []
-  nil)
-
-(defn resetBackground
-  "Resets the background of the sketch by drawing a new sqare over it."
-  []
-  (q/fill 0 0 0)
-  (q/rect 0 0 windowSizeXY windowSizeXY))
+  (loop [bCurvePoints (get @animationContent :bCurvePointVector)]
+    (if (and (not-empty bCurvePoints) (< 1 (count bCurvePoints)))
+      (let [firstPoint (scalePoint (first bCurvePoints))
+            x1 (:x firstPoint)
+            y1 (:y firstPoint)
+            secondPoint (scalePoint (first (rest bCurvePoints)))
+            x2 (:x secondPoint)
+            y2 (:y secondPoint)]
+        (q/stroke 255 0 0)
+        (q/line x1 y1 x2 y2)
+        (recur (rest bCurvePoints)))
+      nil)))
 
 (defn draw
   []
   (q/background 255)
   (drawPointsToFit)
-  (drawControlPointVector))
+  (drawControlPointVector)
+  (drawBCurve))
   
 (q/defsketch bCurveAnimation
   :title "Test"

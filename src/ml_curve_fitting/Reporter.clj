@@ -4,7 +4,7 @@
 (defn findFittestPopulationMemberIndex
   "Returns the index of the fittest member in the population."
   [population]
-  (loop [bestFitness (Integer/MAX_VALUE)
+  (loop [bestFitness (Long/MAX_VALUE)
          fittestMemberIndex 0
          currentIndex 0
          pop population]

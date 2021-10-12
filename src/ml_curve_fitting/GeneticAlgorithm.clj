@@ -41,8 +41,8 @@
    :populationCount populationCount
    :indexOfFittestMember 0
    :generation 0
-   :bestFitness (Integer/MAX_VALUE)
-   :globalBestFitness (Integer/MAX_VALUE)
+   :bestFitness (Long/MAX_VALUE)
+   :globalBestFitness (Long/MAX_VALUE)
    :avgFitness (Double/MAX_VALUE)
    :positionMutationRate positionMutationRate
    :addRemoveMutationRate addRemoveMutationRate

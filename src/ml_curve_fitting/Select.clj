@@ -1,9 +1,8 @@
 
 (ns ml-curve-fitting.Select)
 
-(defn selectFittestPopulationMemberHammingDistance
-  "Selects the fittest member of the given
-   population by Hamming Distance."
+(defn selectFittestPopulationMember
+  "Selects the fittest member of the given population."
   [population]
   (loop [population population
          fittestMember (first population)]
@@ -42,7 +41,7 @@
   (let [selectedTournamentMembers (randomlySelectNPopulationMembers
                                    population
                                    tournamentSize)
-        fittestMember (selectFittestPopulationMemberHammingDistance
+        fittestMember (selectFittestPopulationMember
                        selectedTournamentMembers)]
     fittestMember))
 

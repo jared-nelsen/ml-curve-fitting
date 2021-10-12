@@ -100,7 +100,7 @@
             error (Math/abs (- generatedY controlY))]
         (recur (rest controlPoints)
                (rest generatedPoints)
-               (+ errorSum error))))))
+               (+' errorSum error))))))
 
 (defn evaluateBezierCurve
   "Evaluates and sets the fitness on the given Bezier Curve."
