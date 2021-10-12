@@ -3,6 +3,8 @@
 
 (def defaultYMin -150.0)
 (def defaultYMax 150.0)
+(def defaultXMin -150.0)
+(def defaultXMax 150.0)
 
 (defn randomDoubleInARange
   [low high]
@@ -18,16 +20,18 @@
     (if (empty? controlPointVector)
       updatedControlPointVector
       (let [currentControlPoint (first controlPointVector)
-            updatedControlPoint (assoc currentControlPoint :x (inc currentIndex))]
+            updatedControlPoint (assoc currentControlPoint :xIndex (inc currentIndex))]
         (recur (inc currentIndex)
                (conj updatedControlPointVector updatedControlPoint)
                (rest controlPointVector))))))
 
-(defrecord ControlPoint [x y])
+(defrecord ControlPoint [x y xIndex])
 
 (defn randomControlPoint
   [x]
-  (ControlPoint. x (randomDoubleInARange defaultYMin defaultYMax)))
+  (ControlPoint. (randomDoubleInARange defaultXMin defaultXMax)
+                 (randomDoubleInARange defaultYMin defaultYMax)
+                 x))
 
 (defn randomVectorOfControlPoints
   [count]

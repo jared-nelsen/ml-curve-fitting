@@ -6,12 +6,15 @@
 
 (def pointMinY -150.0)
 (def pointMaxY 150.0)
+(def pointMinX -150.0)
+(def pointMaxX 150.0)
 
 (defrecord Point [x y])
 
 (defn generateRandomPoint
-  [x]
-  (Point. x (randomDoubleInARange pointMinY pointMaxY)))
+  []
+  (Point. (randomDoubleInARange pointMinX pointMaxX)
+          (randomDoubleInARange pointMinY pointMaxY)))
 
 (defn generateVectorOfRandomPoints
   [length]
@@ -20,7 +23,7 @@
          xIndex 0]
     (if (= 0 remainingPoints)
       vectorOfPoints
-      (recur (conj vectorOfPoints (generateRandomPoint xIndex))
+      (recur (conj vectorOfPoints (generateRandomPoint))
              (dec remainingPoints)
              (inc xIndex)))))
 
