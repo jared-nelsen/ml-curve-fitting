@@ -2,8 +2,8 @@
 (ns ml-curve-fitting.Mutate
   (:require [ml-curve-fitting.BezierCurve :as bCurve]))
 
-(def valueBumpLow -0.0001)
-(def valueBumpHigh 0.0001)
+(def valueBumpLow -0.01)
+(def valueBumpHigh 0.01)
 
 (defn randomDoubleInARange
   [low high]

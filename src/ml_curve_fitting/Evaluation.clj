@@ -52,7 +52,7 @@
     (loop [x 0
            y 0
            i n]
-      (if (= 0 i) ;;-1 or 0??
+      (if (= -1 i) ;;-1 or 0??
         (Point. x y)
         (let [controlPoint (nth controlPoints i)
               c (C n i)
@@ -69,7 +69,7 @@
   [controlPoints data]
   (loop [data data
          generatedPoints []]
-    (if (empty? data)
+    (if (or (empty? data) (empty? controlPoints))
       generatedPoints
       (let [dataPoint (first data)
             x (get dataPoint :x)

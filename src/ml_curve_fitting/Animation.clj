@@ -5,7 +5,7 @@
 
 ;; Currently only supports animation for parallel evolution
 
-(def curveDrawingPointInterval 0.01)
+(def curveDrawingPointInterval 0.001)
 
 (defn getFittestBCurveInAlgorithmContext
   "Gets the fittest B Curve out of the given Algorithm Context."
@@ -55,7 +55,7 @@
 
 ;; Drawing
 (def windowSizeXY 1000)
-(def explosionFactor 150)
+(def explosionFactor 350)
 (def xyScaleFactor 0.5) ;; % of window size
 (defn scalePoint
   [point]
